@@ -622,6 +622,9 @@ export class DiscordBot {
             } else if (hook) {
                 MetricPeg.get.remoteCall("hook.send");
                 const embeds = this.prepareEmbedSetWebhook(embedSet);
+
+                if (opts.files) embed.description = null
+                
                 msg = await hook.send(embed.description, {
                     avatarURL: embed!.author!.iconURL,
                     embeds,
