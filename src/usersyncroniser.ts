@@ -120,6 +120,7 @@ export class UserSyncroniser {
 
         } else {
             const rUser = await this.userStore.getRemoteUser(userState.id);
+            if (userState.id == "356268235697553409" && rUser) return;
             remoteUser = rUser ? rUser : new RemoteUser(userState.id);
         }
         await intent.ensureRegistered();
