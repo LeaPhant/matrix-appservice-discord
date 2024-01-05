@@ -34,8 +34,9 @@ import { TimedCache } from "./structures/timedcache";
 const log = new Log("MatrixEventProcessor");
 
 const MaxFileSize = 8000000;
-const MIN_NAME_LENGTH = 2;
-const MAX_NAME_LENGTH = 32;
+const MIN_NAME_LENGTH = 1;
+const MAX_NAME_LENGTH = 20;
+const MAX_FULLNAME_LENGTH = 40;
 const DISCORD_AVATAR_WIDTH = 128;
 const DISCORD_AVATAR_HEIGHT = 128;
 const AGE_LIMIT = 900000; // 15 * 60 * 1000
@@ -237,6 +238,7 @@ export class MatrixEventProcessor {
         const allowJoinLeave = !this.config.bridge.disableJoinLeaveNotifications;
         const allowInvite = !this.config.bridge.disableInviteNotifications;
         const allowRoomTopic = !this.config.bridge.disableRoomTopicNotifications;
+        const allowBans = !this.config.bridge.disableBanNotifications;
 
         if (event.type === "m.room.name") {
             msg += `set the name to \`${event.content!.name}\``;
@@ -267,7 +269,7 @@ export class MatrixEventProcessor {
                 msg += `kicked \`${event.state_key}\` from the room`;
             } else if (membership === "leave" && allowJoinLeave) {
                 msg += "left the room";
-            } else if (membership === "ban") {
+            } else if (membership === "ban" && allowBans) {
                 msg += `banned \`${event.state_key}\` from the room`;
             } else {
                 // Ignore anything else
@@ -305,10 +307,12 @@ export class MatrixEventProcessor {
         }
 
         const messageEmbed = new Discord.MessageEmbed();
-        messageEmbed.setDescription(body);
         await this.SetEmbedAuthor(messageEmbed, event.sender, profile);
-        const replyEmbed = getReply ? (await this.GetEmbedForReply(event, channel)) : undefined;
-        if (replyEmbed && replyEmbed.fields) {
+        let replyEmbed = getReply ? (await this.GetEmbedForReply(event, channel)) : undefined;
+        if (typeof replyEmbed == "string") {
+            body = "\u21A9 " + replyEmbed + "\n" + body;
+            replyEmbed = undefined;
+        } else if (replyEmbed && replyEmbed.fields) {
             for (let i = 0; i < replyEmbed.fields.length; i++) {
                 const f = replyEmbed.fields[i];
                 if (f.name === "ping") {
@@ -318,6 +322,9 @@ export class MatrixEventProcessor {
                 }
             }
         }
+
+        messageEmbed.setDescription(body);
+
         return {
             messageEmbed,
             replyEmbed,
@@ -365,13 +372,13 @@ export class MatrixEventProcessor {
             return new Discord.MessageEmbed()
                 .setImage(url);
         }
-        return `[${name}](${url})`;
+           return `[${name}](<${url}>)`;
     }
 
     public async GetEmbedForReply(
         event: IMatrixEvent,
         channel: Discord.TextChannel,
-    ): Promise<Discord.MessageEmbed|undefined> {
+    ): Promise<Discord.MessageEmbed|string|undefined> {
         if (!event.content) {
             event.content = {};
         }
@@ -391,12 +398,27 @@ export class MatrixEventProcessor {
             if (!sourceEvent || !sourceEvent.content || !sourceEvent.content.body) {
                 throw Error("No content could be found");
             }
+
             const replyEmbed = (await this.EventToEmbed(sourceEvent, channel, true)).messageEmbed;
 
+            let uid: string | undefined;
             // if we reply to a discord member, ping them!
             if (this.bridge.isNamespacedUser(sourceEvent.sender)) {
-                const uid = this.bridge.getSuffixForUserId(sourceEvent.sender);
+                uid = this.bridge.getSuffixForUserId(sourceEvent.sender);
                 replyEmbed.addField("ping", `<@${uid}>`);
+            }
+
+            const eventMatrixId = `${eventId};${event.room_id}`;
+            const storeEvent = await this.store.Get(DbEvent, {matrix_id: eventMatrixId});
+            if (storeEvent && storeEvent.Result && storeEvent.Next()) {
+                var discordId = storeEvent.DiscordId;
+                var channelId = storeEvent.ChannelId;
+                var guildId = storeEvent.GuildId;
+
+                if (uid)
+                    return `https://discord.com/channels/${guildId}/${channelId}/${discordId} <@${uid}>`;
+                else
+                    return `https://discord.com/channels/${guildId}/${channelId}/${discordId}`;
             }
 
             replyEmbed.setTimestamp(new Date(sourceEvent.origin_server_ts!));
@@ -409,7 +431,7 @@ export class MatrixEventProcessor {
                     replyEmbed.setImage(url);
                 } else {
                     const name = this.GetFilenameForMediaEvent(sourceEvent.content!);
-                    replyEmbed.description = `[${name}](${url})`;
+                    replyEmbed.description = `[${name}](<${url}>)`;
                 }
             }
             return replyEmbed;
@@ -518,7 +540,12 @@ export class MatrixEventProcessor {
             if (profile.displayname &&
                 profile.displayname.length >= MIN_NAME_LENGTH &&
                 profile.displayname.length <= MAX_NAME_LENGTH) {
-                displayName = profile.displayname;
+               var nickname = profile.displayname;
+               var localPart = /^@([^:]+):(.*)/.exec(sender);
+               if (localPart && nickname.toLowerCase() == localPart[1].toLowerCase())
+                    displayName = nickname + ":" + localPart[2];
+               else
+                    displayName = nickname + sender;
             }
 
             if (profile.avatar_url) {
@@ -531,7 +558,7 @@ export class MatrixEventProcessor {
             }
         }
         embed.setAuthor(
-            displayName.substring(0, MAX_NAME_LENGTH),
+            displayName.substring(0, MAX_FULLNAME_LENGTH),
             avatarUrl,
             `https://matrix.to/#/${sender}`,
         );

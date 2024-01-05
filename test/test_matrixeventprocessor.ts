@@ -767,7 +767,7 @@ describe("MatrixEventProcessor", () => {
                 },
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             expect(result).to.be.undefined;
         });
         it("should handle replies without a fallback", async () => {
@@ -784,7 +784,7 @@ describe("MatrixEventProcessor", () => {
                 room_id: "!fakeroom:localhost",
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             expect(result!.description).to.be.equal("Hello!");
             expect(result!.author!.name).to.be.equal("Doggo!");
             expect(result!.author!.iconURL).to.be.equal("https://fakeurl.com");
@@ -806,7 +806,7 @@ This is where the reply goes`,
                 room_id: "!fakeroom:localhost",
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             expect(result!.description).to.be.equal("Reply with unknown content");
             expect(result!.author!.name).to.be.equal("Unknown");
             expect(result!.author!.iconURL).to.be.undefined;
@@ -828,7 +828,7 @@ This is where the reply goes`,
                 room_id: "!fakeroom:localhost",
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             expect(result!.description).to.be.equal("Hello!");
             expect(result!.author!.name).to.be.equal("Doggo!");
             expect(result!.author!.iconURL).to.be.equal("https://fakeurl.com");
@@ -852,7 +852,7 @@ This is the second reply`,
                 room_id: "!fakeroom:localhost",
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             expect(result!.description).to.be.equal("This is the first reply");
             expect(result!.author!.name).to.be.equal("Doggo!");
             expect(result!.author!.iconURL).to.be.equal("https://fakeurl.com");
@@ -874,7 +874,7 @@ This is the reply`,
                 room_id: "!fakeroom:localhost",
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             expect(result!.description).to.be.equal("Reply with unknown content");
             expect(result!.author!.name).to.be.equal("Unknown");
             expect(result!.author!.iconURL).to.be.undefined;
@@ -894,7 +894,7 @@ This is the reply`,
                 room_id: "!fakeroom:localhost",
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             // NOTE: Due to https://github.com/discordjs/discord.js/issues/3283, the typing is wrong here.
             expect(result!.timestamp!).to.be.equal(TEST_TIMESTAMP);
         });
@@ -912,7 +912,7 @@ This is the reply`,
                 room_id: "!fakeroom:localhost",
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             let foundField = false;
             for (const f of result!.fields!) {
                 if (f.name === "ping") {
@@ -937,7 +937,7 @@ This is the reply`,
                 room_id: "!fakeroom:localhost",
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             expect(result!.image!.url!).to.be.equal("https://fox/localhost");
             expect(result!.description).to.be.equal("fox.jpg");
         });
@@ -955,7 +955,7 @@ This is the reply`,
                 room_id: "!fakeroom:localhost",
                 sender: "@test:localhost",
                 type: "m.room.message",
-            } as IMatrixEvent, mockChannel as any);
+            } as IMatrixEvent, mockChannel as any) as any;
             expect(result!.description).to.be.equal("[package.zip](https://package/localhost)");
         });
     });

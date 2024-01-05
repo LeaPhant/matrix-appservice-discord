@@ -119,7 +119,7 @@ export class MatrixMessageProcessor {
                 return emoji;
             },
             getUserId: async (mxid: string) => {
-                const USER_REGEX = /^@_discord_([0-9]*)/;
+                const USER_REGEX = /^@_discord_([0-9]+)/;
                 const match = mxid.match(USER_REGEX);
                 const member = match && await guild.members.fetch(match[1]);
                 if (!match || !member) {
