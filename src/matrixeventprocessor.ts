@@ -540,12 +540,7 @@ export class MatrixEventProcessor {
             if (profile.displayname &&
                 profile.displayname.length >= MIN_NAME_LENGTH &&
                 profile.displayname.length <= MAX_NAME_LENGTH) {
-               var nickname = profile.displayname;
-               var localPart = /^@([^:]+):(.*)/.exec(sender);
-               if (localPart && nickname.toLowerCase() == localPart[1].toLowerCase())
-                    displayName = nickname + ":" + localPart[2];
-               else
-                    displayName = nickname + sender;
+                displayName = profile.displayname;
             }
 
             if (profile.avatar_url) {
