@@ -35,8 +35,7 @@ const log = new Log("MatrixEventProcessor");
 
 const MaxFileSize = 8000000;
 const MIN_NAME_LENGTH = 1;
-const MAX_NAME_LENGTH = 20;
-const MAX_FULLNAME_LENGTH = 40;
+const MAX_NAME_LENGTH = 80;
 const DISCORD_AVATAR_WIDTH = 128;
 const DISCORD_AVATAR_HEIGHT = 128;
 const AGE_LIMIT = 900000; // 15 * 60 * 1000
@@ -553,7 +552,7 @@ export class MatrixEventProcessor {
             }
         }
         embed.setAuthor(
-            displayName.substring(0, MAX_FULLNAME_LENGTH),
+            displayName.substring(0, MAX_NAME_LENGTH),
             avatarUrl,
             `https://matrix.to/#/${sender}`,
         );
