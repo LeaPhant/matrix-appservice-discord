@@ -308,12 +308,12 @@ export class MatrixEventProcessor {
         const messageEmbed = new Discord.MessageEmbed();
         await this.SetEmbedAuthor(messageEmbed, event.sender, profile);
         let replyEmbed = getReply ? (await this.GetEmbedForReply(event, channel)) : undefined;
-        if (typeof replyEmbed == "string") {
-            body = "\u21A9 " + replyEmbed + "\n" + body;
-
-            if (event.content?.body?.substring(0, 2) == "!@") {
+        if (typeof replyEmbed == "string") { 
+            if (body.substring(0, 2) == "!@") {
                 body = "@silent " + body;
             }
+
+            body = "\u21A9 " + replyEmbed + "\n" + body;
 
             replyEmbed = undefined;
         } else if (replyEmbed && replyEmbed.fields) {
