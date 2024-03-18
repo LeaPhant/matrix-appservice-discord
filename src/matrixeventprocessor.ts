@@ -309,11 +309,13 @@ export class MatrixEventProcessor {
         await this.SetEmbedAuthor(messageEmbed, event.sender, profile);
         let replyEmbed = getReply ? (await this.GetEmbedForReply(event, channel)) : undefined;
         if (typeof replyEmbed == "string") { 
+            let silent = false;
+
             if (body.substring(0, 2) == "!@") {
-                body = "@silent " + body;
+                silent = true;
             }
 
-            body = "\u21A9 " + replyEmbed + "\n" + body;
+            body = silent ? "@silent" : "" + "\u21A9 " + replyEmbed + "\n" + body;
 
             replyEmbed = undefined;
         } else if (replyEmbed && replyEmbed.fields) {
