@@ -315,7 +315,7 @@ export class MatrixEventProcessor {
                 silent = true;
             }
 
-            body = silent ? "@silent" : "" + "\u21A9 " + replyEmbed + "\n" + body;
+            body = (silent ? "@silent" : "") + "\u21A9 " + replyEmbed + "\n" + body;
 
             replyEmbed = undefined;
         } else if (replyEmbed && replyEmbed.fields) {
