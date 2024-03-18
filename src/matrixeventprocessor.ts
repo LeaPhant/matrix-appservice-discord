@@ -313,6 +313,7 @@ export class MatrixEventProcessor {
 
             if (body.substring(0, 2) == "!@") {
                 silent = true;
+                body = body.substring(2).trim();
             }
 
             body = (silent ? "@silent" : "") + "\u21A9 " + replyEmbed + "\n" + body;
