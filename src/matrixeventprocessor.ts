@@ -310,6 +310,11 @@ export class MatrixEventProcessor {
         let replyEmbed = getReply ? (await this.GetEmbedForReply(event, channel)) : undefined;
         if (typeof replyEmbed == "string") {
             body = "\u21A9 " + replyEmbed + "\n" + body;
+
+            if (event.content?.body?.substring(0, 2) == "!@") {
+                body = "@silent " + body;
+            }
+
             replyEmbed = undefined;
         } else if (replyEmbed && replyEmbed.fields) {
             for (let i = 0; i < replyEmbed.fields.length; i++) {
