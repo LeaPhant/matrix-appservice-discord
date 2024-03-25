@@ -541,7 +541,7 @@ export class DiscordBot {
             }
         }
         try {
-            if (editEventId === this.lastEventIds[chan.id]) {
+            /*if (editEventId === this.lastEventIds[chan.id]) {
                 log.info("Immediate edit, deleting and re-sending");
                 this.channelLock.set(chan.id);
                 // we need to delete the event off of the store
@@ -566,7 +566,7 @@ export class DiscordBot {
                 });
                 return;
             }
-            /*const link = `https://discord.com/channels/${chan.guild.id}/${chan.id}/${editEventId}`;
+            const link = `https://discord.com/channels/${chan.guild.id}/${chan.id}/${editEventId}`;
             embedSet.messageEmbed.description = `[Edit](<${link}>): ${embedSet.messageEmbed.description}`;*
             await this.send(embedSet, opts, roomLookup, event);*/
             await this.send(embedSet, opts, roomLookup, event, undefined, editEventId);
@@ -635,11 +635,13 @@ export class DiscordBot {
                         username: embed!.author!.name,
                     });
                 } else {
-                    await hook.editMessage(
+                    msg = await hook.editMessage(
                         editMessageId, 
                         embed.description, 
                         { embeds }
                     );
+
+                    return msg;
                 }
             } else {
                 opts.embed = this.prepareEmbedSetBot(embedSet);
