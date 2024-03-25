@@ -566,9 +566,10 @@ export class DiscordBot {
                 });
                 return;
             }
-            const link = `https://discord.com/channels/${chan.guild.id}/${chan.id}/${editEventId}`;
-            embedSet.messageEmbed.description = `[Edit](<${link}>): ${embedSet.messageEmbed.description}`;
-            await this.send(embedSet, opts, roomLookup, event);
+            /*const link = `https://discord.com/channels/${chan.guild.id}/${chan.id}/${editEventId}`;
+            embedSet.messageEmbed.description = `[Edit](<${link}>): ${embedSet.messageEmbed.description}`;*
+            await this.send(embedSet, opts, roomLookup, event);*/
+            await this.send(embedSet, opts, roomLookup, event, undefined, editEventId);
         } catch (err) {
             // throw wrapError(err, Unstable.ForeignNetworkError, "Couldn't edit message");
             log.warn(`Failed to edit message ${event.event_id}`);
@@ -586,6 +587,7 @@ export class DiscordBot {
         roomLookup: ChannelLookupResult,
         event: IMatrixEvent,
         awaitStore: boolean = false,
+        editMessageId: string = ""
     ): Promise<Discord.Message | null | (Discord.Message | null)[]> {
         const chan = roomLookup.channel;
         const botUser = roomLookup.botUser;
@@ -624,13 +626,21 @@ export class DiscordBot {
                 const embeds = this.prepareEmbedSetWebhook(embedSet);
 
                 if (opts.files) embed.description = null
-                
-                msg = await hook.send(embed.description, {
-                    avatarURL: embed!.author!.iconURL,
-                    embeds,
-                    files: opts.files,
-                    username: embed!.author!.name,
-                });
+
+                if (editMessageId == "") {
+                    msg = await hook.send(embed.description, {
+                        avatarURL: embed!.author!.iconURL,
+                        embeds,
+                        files: opts.files,
+                        username: embed!.author!.name,
+                    });
+                } else {
+                    await hook.editMessage(
+                        editMessageId, 
+                        embed.description, 
+                        { embeds }
+                    );
+                }
             } else {
                 opts.embed = this.prepareEmbedSetBot(embedSet);
                 msg = await chan.send("", opts);
