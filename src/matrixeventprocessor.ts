@@ -417,17 +417,20 @@ export class MatrixEventProcessor {
                 replyEmbed.addField("ping", `<@${uid}>`);
             }
 
+            let replyBody: string = "";
+
             const eventMatrixId = `${eventId};${event.room_id}`;
             const storeEvent = await this.store.Get(DbEvent, {matrix_id: eventMatrixId});
             if (storeEvent && storeEvent.Result && storeEvent.Next()) {
-                var discordId = storeEvent.DiscordId;
-                var channelId = storeEvent.ChannelId;
-                var guildId = storeEvent.GuildId;
+                const discordId = storeEvent.DiscordId;
+                const channelId = storeEvent.ChannelId;
+                const guildId = storeEvent.GuildId;
 
-                if (uid)
-                    return `https://discord.com/channels/${guildId}/${channelId}/${discordId} <@${uid}>`;
-                else
-                    return `https://discord.com/channels/${guildId}/${channelId}/${discordId}`;
+                if (uid) {
+                    replyBody = `https://discord.com/channels/${guildId}/${channelId}/${discordId} <@${uid}>`;
+                } else {
+                    replyBody = `https://discord.com/channels/${guildId}/${channelId}/${discordId}`;
+                }
             }
 
             replyEmbed.setTimestamp(new Date(sourceEvent.origin_server_ts!));
@@ -437,13 +440,25 @@ export class MatrixEventProcessor {
                 if (["m.image", "m.sticker"].includes(sourceEvent.content!.msgtype as string)
                     || sourceEvent.type === "m.sticker") {
                     // we have an image reply
-                    replyEmbed.setImage(url);
+                    replyBody += ' Attachment 🖼️'
                 } else {
                     const name = this.GetFilenameForMediaEvent(sourceEvent.content!);
-                    replyEmbed.description = `[${name}](<${url}>)`;
+                    replyBody += ` [${name}](<${url}>)`;
+                }
+            } else {
+                let sourceBody: string = sourceEvent.content?.body;
+
+                if (sourceBody !== undefined) {
+                    sourceBody = sourceBody.replace(/\n/g, ' ');
+                    if (sourceBody.length > 120) {
+                        sourceBody = `${sourceBody.substring(0,120)}…`;
+                    }
+
+                    replyBody += ` ${sourceBody}`;
                 }
             }
-            return replyEmbed;
+
+            return replyBody;
         } catch (ex) {
             log.warn("Failed to handle reply, showing a unknown embed:", ex);
         }
