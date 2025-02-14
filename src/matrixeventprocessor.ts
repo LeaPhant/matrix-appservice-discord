@@ -318,7 +318,7 @@ export class MatrixEventProcessor {
                 body = body.substring(2).trim();
             }
 
-            body = (silent ? "@silent " : "") + replyEmbed + "\n" + body;
+            body = (silent ? "@silent " : "") + "-# \u21A9 " + replyEmbed + "\n" + body;
 
             replyEmbed = undefined;
         } else if (replyEmbed && replyEmbed.fields) {
@@ -417,7 +417,7 @@ export class MatrixEventProcessor {
                 replyEmbed.addField("ping", `<@${uid}>`);
             }
 
-            let replyBody: string = "-# ";
+            let replyBody: string = "";
 
             const eventMatrixId = `${eventId};${event.room_id}`;
             const storeEvent = await this.store.Get(DbEvent, {matrix_id: eventMatrixId});
@@ -427,9 +427,9 @@ export class MatrixEventProcessor {
                 const guildId = storeEvent.GuildId;
 
                 if (uid) {
-                    replyBody += `[\u21A9](https://discord.com/channels/${guildId}/${channelId}/${discordId}) <@${uid}>`;
+                    replyBody = `https://discord.com/channels/${guildId}/${channelId}/${discordId} <@${uid}>`;
                 } else {
-                    replyBody += `[\u21A9](https://discord.com/channels/${guildId}/${channelId}/${discordId})`;
+                    replyBody = `https://discord.com/channels/${guildId}/${channelId}/${discordId}`;
                 }
             }
 
