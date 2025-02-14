@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+/* eslint-disable max-classes-per-file */
 /*
 Copyright 2018, 2019 matrix-appservice-discord
 
@@ -316,7 +318,7 @@ export class MatrixEventProcessor {
                 body = body.substring(2).trim();
             }
 
-            body = (silent ? "@silent" : "") + "\u21A9 " + replyEmbed + "\n" + body;
+            body = (silent ? "@silent " : "") + "-# \u21A9 " + replyEmbed + "\n" + body;
 
             replyEmbed = undefined;
         } else if (replyEmbed && replyEmbed.fields) {
