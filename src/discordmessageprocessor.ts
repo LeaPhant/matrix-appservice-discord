@@ -22,7 +22,7 @@ import {
     IDiscordMessageParserOpts,
     IDiscordMessageParserCallbacks,
     IDiscordMessageParserResult,
-} from "@mx-puppet/matrix-discord-parser";
+} from "./discord/matrix-discord-parser";
 
 const log = new Log("DiscordMessageProcessor");
 

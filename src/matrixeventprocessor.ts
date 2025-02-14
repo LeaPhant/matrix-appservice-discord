@@ -1,3 +1,4 @@
+/* eslint-disable prefer-template */
 /* eslint-disable max-lines */
 /* eslint-disable max-classes-per-file */
 /*
@@ -49,7 +50,7 @@ export class MatrixEventProcessorOpts {
         readonly bridge: Appservice,
         readonly discord: DiscordBot,
         readonly store: DiscordStore,
-        ) {
+    ) {
 
     }
 }
@@ -166,7 +167,7 @@ export class MatrixEventProcessor {
         });
         const channel = await this.discord.GetChannelFromRoomId(roomId);
         await (channel as Discord.TextChannel).send(
-          "Someone on Matrix has turned on encryption in this room, so the service will not bridge any new messages",
+            "Someone on Matrix has turned on encryption in this room, so the service will not bridge any new messages",
         );
         await sendPromise;
         await this.bridge.botIntent.underlyingClient.leaveRoom(roomId);
@@ -208,7 +209,7 @@ export class MatrixEventProcessor {
             embedSet.imageEmbed = file as Discord.MessageEmbed;
         }
 
-    // Throws an `Unstable.ForeignNetworkError` when sending the message fails.
+        // Throws an `Unstable.ForeignNetworkError` when sending the message fails.
         if (editEventId) {
             await this.discord.edit(embedSet, opts, roomLookup, event, editEventId);
         } else {
@@ -310,7 +311,7 @@ export class MatrixEventProcessor {
         const messageEmbed = new Discord.MessageEmbed();
         await this.SetEmbedAuthor(messageEmbed, event.sender, profile);
         let replyEmbed = getReply ? (await this.GetEmbedForReply(event, channel)) : undefined;
-        if (typeof replyEmbed == "string") { 
+        if (typeof replyEmbed == "string") {
             let silent = false;
 
             if (body.substring(0, 2) == "!@") {
@@ -381,7 +382,7 @@ export class MatrixEventProcessor {
             return new Discord.MessageEmbed()
                 .setImage(url);
         }
-           return `[${name}](<${url}>)`;
+        return `[${name}](<${url}>)`;
     }
 
     public async GetEmbedForReply(

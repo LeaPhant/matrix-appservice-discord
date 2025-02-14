@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+/* eslint-disable max-classes-per-file */
 /*
 Copyright 2017 - 2019 matrix-appservice-discord
 
@@ -15,7 +17,7 @@ limitations under the License.
 */
 
 import * as Discord from "@mx-puppet/better-discord.js";
-import { IDiscordMessageParserResult } from "@mx-puppet/matrix-discord-parser";
+import { IDiscordMessageParserResult } from "./discord/matrix-discord-parser";
 import { DiscordBridgeConfig } from "./config";
 import { DiscordClientFactory } from "./clientfactory";
 import { DiscordStore } from "./store";
