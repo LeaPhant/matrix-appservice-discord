@@ -24,7 +24,7 @@ import {
     IMatrixMessageParserCallbacks,
     IMatrixMessageParserOpts,
     MatrixMessageParser,
-} from "./discord/matrix-discord-parser";
+} from "./discord/matrix-discord-parser/src/index";
 
 const DEFAULT_ROOM_NOTIFY_POWER_LEVEL = 50;
 

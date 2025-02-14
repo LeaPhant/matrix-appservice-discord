@@ -331,29 +331,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mx-puppet/discord-markdown@https://gitlab.com/LeaPhant/discord-markdown.git":
-  version: 2.3.1
-  resolution: "@mx-puppet/discord-markdown@https://gitlab.com/LeaPhant/discord-markdown.git#commit=568d2d9ed04b8c6965e5cb229b6bb42b7487f91b"
-  dependencies:
-    highlight.js: ^10.4.1
-    node-emoji: ^1.10.0
-    simple-markdown: ^0.7.2
-  checksum: 616ca328cfeaa7626101545a72598edfa72158bba6bba74f0a40639333895f21eb4df1a1454e8103c22067478f14306d49748271b8eb4d9bc7624b06ef4a7454
-  languageName: node
-  linkType: hard
-
 "@mx-puppet/matrix-discord-parser@workspace:.":
   version: 0.0.0-use.local
   resolution: "@mx-puppet/matrix-discord-parser@workspace:."
   dependencies:
     "@istanbuljs/nyc-config-typescript": ^1.0.1
-    "@mx-puppet/discord-markdown": "https://gitlab.com/LeaPhant/discord-markdown.git"
     "@types/chai": ^4.2.11
     "@types/mocha": ^5.2.7
     "@types/node": ^12.12.30
     "@types/sqlite3": ^3.1.6
     chai: ^4.2.0
-    discord.js: 12
+    discord.js: ^12.5.1
     escape-html: ^1.0.3
     got: ^11.6.0
     highlight.js: ^10.4.1
@@ -478,37 +466,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:*":
-  version: 15.7.5
-  resolution: "@types/prop-types@npm:15.7.5"
-  checksum: 5b43b8b15415e1f298243165f1d44390403bb2bd42e662bca3b5b5633fdd39c938e91b7fce3a9483699db0f7a715d08cef220c121f723a634972fdf596aec980
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:>=16.0.0":
-  version: 18.0.8
-  resolution: "@types/react@npm:18.0.8"
-  dependencies:
-    "@types/prop-types": "*"
-    "@types/scheduler": "*"
-    csstype: ^3.0.2
-  checksum: 12d0e6bc390709926d8eaeb7d2edb4ef9c9fbe8eac41cb0619d958386700547bff91c880c2a12a9eb1e0d09afa4f1e86fd1b93164c627824465b72123f149f3b
-  languageName: node
-  linkType: hard
-
 "@types/responselike@npm:*, @types/responselike@npm:^1.0.0":
   version: 1.0.0
   resolution: "@types/responselike@npm:1.0.0"
   dependencies:
     "@types/node": "*"
   checksum: e99fc7cc6265407987b30deda54c1c24bb1478803faf6037557a774b2f034c5b097ffd65847daa87e82a61a250d919f35c3588654b0fdaa816906650f596d1b0
-  languageName: node
-  linkType: hard
-
-"@types/scheduler@npm:*":
-  version: 0.16.2
-  resolution: "@types/scheduler@npm:0.16.2"
-  checksum: b6b4dcfeae6deba2e06a70941860fb1435730576d3689225a421280b7742318d1548b3d22c1f66ab68e414f346a9542f29240bc955b6332c5b11e561077583bc
   languageName: node
   linkType: hard
 
@@ -1095,13 +1058,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csstype@npm:^3.0.2":
-  version: 3.0.11
-  resolution: "csstype@npm:3.0.11"
-  checksum: 95e56abfe9ca219ae065acb4e43f61771a03170eed919127f558dfa168240867aba7629c8d98a201a0dd06d9a5ce82686f0570031c928516c61816adbc7c877f
-  languageName: node
-  linkType: hard
-
 "debug@npm:4, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.3":
   version: 4.3.4
   resolution: "debug@npm:4.3.4"
@@ -1225,7 +1181,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"discord.js@npm:12":
+"discord.js@npm:^12.5.1":
   version: 12.5.3
   resolution: "discord.js@npm:12.5.3"
   dependencies:
@@ -2141,13 +2097,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.21":
-  version: 4.17.21
-  resolution: "lodash@npm:4.17.21"
-  checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
-  languageName: node
-  linkType: hard
-
 "log-symbols@npm:4.1.0":
   version: 4.1.0
   resolution: "log-symbols@npm:4.1.0"
@@ -2486,15 +2435,6 @@ __metadata:
   version: 2.6.2
   resolution: "neo-async@npm:2.6.2"
   checksum: deac9f8d00eda7b2e5cd1b2549e26e10a0faa70adaa6fdadca701cc55f49ee9018e427f424bac0c790b7c7e2d3068db97f3093f1093975f2acb8f8818b936ed9
-  languageName: node
-  linkType: hard
-
-"node-emoji@npm:^1.10.0":
-  version: 1.11.0
-  resolution: "node-emoji@npm:1.11.0"
-  dependencies:
-    lodash: ^4.17.21
-  checksum: e8c856c04a1645062112a72e59a98b203505ed5111ff84a3a5f40611afa229b578c7d50f1e6a7f17aa62baeea4a640d2e2f61f63afc05423aa267af10977fb2b
   languageName: node
   linkType: hard
 
@@ -3107,15 +3047,6 @@ __metadata:
   version: 3.0.7
   resolution: "signal-exit@npm:3.0.7"
   checksum: a2f098f247adc367dffc27845853e9959b9e88b01cb301658cfe4194352d8d2bb32e18467c786a7fe15f1d44b233ea35633d076d5e737870b7139949d1ab6318
-  languageName: node
-  linkType: hard
-
-"simple-markdown@npm:^0.7.2":
-  version: 0.7.3
-  resolution: "simple-markdown@npm:0.7.3"
-  dependencies:
-    "@types/react": ">=16.0.0"
-  checksum: 165941899fddfaa7c398410f8ce6941109bc86fbc9abb17f8b6be7a9ac8ae36c0af643a3e0adcba60053a9f1eaecdd4016d46d79eef39b8ae04982d2bd52bbc9
   languageName: node
   linkType: hard
 

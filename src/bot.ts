@@ -17,7 +17,7 @@ limitations under the License.
 */
 
 import * as Discord from "@mx-puppet/better-discord.js";
-import { IDiscordMessageParserResult } from "./discord/matrix-discord-parser";
+import { IDiscordMessageParserResult } from "./discord/matrix-discord-parser/src/index";
 import { DiscordBridgeConfig } from "./config";
 import { DiscordClientFactory } from "./clientfactory";
 import { DiscordStore } from "./store";

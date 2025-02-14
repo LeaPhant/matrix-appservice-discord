@@ -5,12 +5,12 @@
   "main": "./lib/src/index.js",
   "scripts": {
     "prepare": "husky install",
-    "postinstall": "yarn build",
+    "postinstall": "cd ./src/discord/matrix-appservice-discord && yarn build && cd ../../.. && yarn build",
     "prepublishOnly": "yarn build",
     "test": "mocha test --reporter mocha-junit-reporter",
     "lint": "tslint --project ./tsconfig.json -t stylish",
     "coverage": "nyc mocha test --reporter mocha-junit-reporter",
-    "build": "npx tsc"
+    "build": "cp ./src/*.js ./lib/src/ && npx tsc"
   },
   "repository": {
     "type": "git",
