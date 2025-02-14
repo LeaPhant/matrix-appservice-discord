@@ -448,7 +448,7 @@ export class MatrixEventProcessor {
             } else {
                 let sourceBody: string = sourceEvent.content?.body;
 
-                if (sourceBody.startsWith('"> <@_discord_')) {
+                if (sourceBody.startsWith('> <@')) {
                     return replyBody;
                 }
 
