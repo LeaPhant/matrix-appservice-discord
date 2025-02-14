@@ -448,6 +448,10 @@ export class MatrixEventProcessor {
             } else {
                 let sourceBody: string = sourceEvent.content?.body;
 
+                if (sourceBody.startsWith('"> <@_discord_')) {
+                    return replyBody;
+                }
+
                 if (sourceBody !== undefined) {
                     sourceBody = sourceBody.replace(/\n/g, ' ');
                     if (sourceBody.length > 120) {
