@@ -24,7 +24,6 @@
   },
   "homepage": "https://github.com/matrix-discord/matrix-discord-parser#readme",
   "dependencies": {
-    "@mx-puppet/discord-markdown": "https://gitlab.com/LeaPhant/discord-markdown.git",
     "discord.js": "^12.5.1",
     "escape-html": "^1.0.3",
     "got": "^11.6.0",
