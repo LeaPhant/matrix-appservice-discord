@@ -202,7 +202,7 @@ export class MatrixEventProcessor {
         const opts: Discord.MessageOptions = {};
         const file = await this.HandleAttachment(event, mxClient, roomLookup.canSendEmbeds);
         if (typeof(file) === "string") {
-            embedSet.messageEmbed.description += " " + file;
+            embedSet.messageEmbed.description = file;
         } else if ((file as Discord.FileOptions).name && (file as Discord.FileOptions).attachment) {
             opts.files = [file as Discord.FileOptions];
         } else {
@@ -382,7 +382,7 @@ export class MatrixEventProcessor {
             return new Discord.MessageEmbed()
                 .setImage(url);
         }
-        return `[${name}](<${url}>)`;
+        return `[${name}](${url})`;
     }
 
     public async GetEmbedForReply(
