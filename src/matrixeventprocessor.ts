@@ -20,7 +20,7 @@ limitations under the License.
 import * as Discord from "@mx-puppet/better-discord.js";
 import { DiscordBot } from "./bot";
 import { DiscordBridgeConfig } from "./config";
-import { Util, wrapError } from "./util";
+import { Util, wrapError, isUrl } from "./util";
 import * as path from "path";
 import * as mime from "mime";
 import { IMatrixEvent, IMatrixEventContent, IMatrixMessage } from "./matrixtypes";
