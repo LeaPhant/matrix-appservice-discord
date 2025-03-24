@@ -201,7 +201,8 @@ export class MatrixEventProcessor {
         const embedSet = await this.EventToEmbed(event, chan);
         const opts: Discord.MessageOptions = {};
         const file = await this.HandleAttachment(event, mxClient, roomLookup.canSendEmbeds);
-        if (typeof(file) === "string") {
+        // There is a file url, replace description as Matrix messages can't have both a file and text
+        if (typeof(file) === "string" && file.length > 0) {
             embedSet.messageEmbed.description = file;
         } else if ((file as Discord.FileOptions).name && (file as Discord.FileOptions).attachment) {
             opts.files = [file as Discord.FileOptions];
