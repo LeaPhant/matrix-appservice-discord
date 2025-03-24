@@ -459,7 +459,19 @@ export class MatrixEventProcessor {
                         sourceBody = `${sourceBody.substring(0,120)}…`;
                     }
 
-                    replyBody += ` ${sourceBody}`;
+                    const replaceBody: string[] = [];
+
+                    for (let part of sourceBody.split(' ')) {
+                        if (isUrl(part)) {
+                            part = `<${part}>`;
+                        }
+
+                        replaceBody.push(part);
+                    }
+
+                    const outputBody: string = replaceBody.join(' ');
+
+                    replyBody += ` ${outputBody}`;
                 }
             }
 
