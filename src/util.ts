@@ -112,7 +112,7 @@ export class Util {
                 verb = 'thumbnail';
             }
 
-            const prefix = `/_matrix/client/v1/media/${verb}`;
+            const prefix = `/_matrix/media/v3/${verb}`;
 
             const url = new URL(`${prefix}/${serverName}/${mediaId}`, mxClient.homeserverUrl);
 
