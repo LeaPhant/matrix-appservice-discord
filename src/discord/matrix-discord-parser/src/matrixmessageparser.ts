@@ -212,10 +212,11 @@ export class MatrixMessageParser {
             if (!src) {
                 return content;
             }
-            let url = opts.callbacks.mxcUrlToHttp(src);
+
+            const url = await opts.callbacks.mxcUrlToHttp(src);
 
             return `[${content}](${url})`;
-            
+
             /*const shortener = opts.urlShortener || DEFAULT_URL_SHORTENER;
             if (shortener.endpoint && shortener.urlParameter && shortener.shortParameter) {
                 const body: any = shortener.extraBody || {}; // tslint:disable-line no-any
