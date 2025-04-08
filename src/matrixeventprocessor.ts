@@ -383,7 +383,7 @@ export class MatrixEventProcessor {
             return new Discord.MessageEmbed()
                 .setImage(url);
         }
-        return `[${name}](${await Util.MxcToHttpUnauthenticated(url, this.bridge.botClient)})`;
+        return `[${name}](${await Util.MxcToHttpUnauthenticated(event.content.url, this.bridge.botClient)})`;
     }
 
     public async GetEmbedForReply(
