@@ -24,7 +24,7 @@ import { DiscordBridgeConfigBridge } from "../src/config";
 import { MockChannel } from "./mocks/channel";
 import { IMatrixEvent } from "../src/matrixtypes";
 import { AppserviceMock } from "./mocks/appservicemock";
-import { Appservice } from "matrix-bot-sdk";
+import { Appservice } from "@vector-im/matrix-bot-sdk";
 
 // we are a test file and thus need those
 /* tslint:disable:no-unused-expression max-file-line-count no-any */

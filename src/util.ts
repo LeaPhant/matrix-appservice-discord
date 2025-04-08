@@ -24,7 +24,7 @@ import { IMatrixEvent } from "./matrixtypes";
 const HTTP_OK = 200;
 
 import { Log } from "./log";
-import { Intent, MatrixClient } from "matrix-bot-sdk";
+import { Intent, MatrixClient } from "@vector-im/matrix-bot-sdk";
 const log = new Log("Util");
 
 type PERMISSIONTYPES = any | any[]; // tslint:disable-line no-any
@@ -66,13 +66,20 @@ export class Util {
      * downloadFile - This function will take a URL and store the resulting data into
      * a buffer.
      */
-    public static async DownloadFile(url: string): Promise<IDownloadedFile> {
+    public static async DownloadFile(url: string, mxClient?: MatrixClient): Promise<IDownloadedFile> {
         return new Promise((resolve, reject) => {
             let get = http.get;
             if (url.startsWith("https")) {
                 get = https.get;
             }
-            const req = get((url), (res) => {
+
+            const headers = {};
+
+            if (mxClient !== undefined) {
+                headers['Authorization'] = `Bearer ${mxClient.accessToken}`;
+            }
+
+            const req = get((url), { headers }, (res) => {
                 let buffer = Buffer.alloc(0);
                 if (res.statusCode !== HTTP_OK) {
                     reject(`Non 200 status code (${res.statusCode})`);
@@ -93,6 +100,37 @@ export class Util {
                 reject(`Failed to download. ${err}`);
             });
         }) as Promise<IDownloadedFile>;
+    }
+
+    public static async MxcToHttpUnauthenticated(mxc: string, mxClient: MatrixClient, width?: number, height?: number, method?: string): Promise<string> {
+        return new Promise(async (resolve, _) => {
+            const authUrl = await mxClient.mxcToHttp(mxc);
+            void this.DownloadFile(authUrl.toString(), mxClient).catch();
+
+            const [serverName, mediaId, ...rest] = mxc.slice(6).split("/");
+
+            let verb = 'download';
+
+            if (width !== undefined) {
+                verb = 'thumbnail';
+            }
+
+            const prefix = `/_matrix/media/v3/${verb}`;
+
+            const url = new URL(`${prefix}/${serverName}/${mediaId}`, mxClient.homeserverUrl);
+
+            if (width) {
+                url.searchParams.set("width", Math.round(width).toString());
+            }
+            if (height) {
+                url.searchParams.set("height", Math.round(height).toString());
+            }
+            if (method) {
+                url.searchParams.set("method", method);
+            }
+
+            resolve(url.toString())
+        });
     }
 
     /**

@@ -33,7 +33,7 @@ import { MatrixRoomHandler } from "./matrixroomhandler";
 import { Log } from "./log";
 import * as mime from "mime";
 import { IMatrixEvent, IMatrixMediaInfo, IMatrixMessage } from "./matrixtypes";
-import { Appservice, Intent, MatrixClient } from "matrix-bot-sdk";
+import { Appservice, Intent, MatrixClient } from "@vector-im/matrix-bot-sdk";
 import { DiscordCommandHandler } from "./discordcommandhandler";
 import { MetricPeg } from "./metrics";
 import { Lock } from "./structures/lock";
