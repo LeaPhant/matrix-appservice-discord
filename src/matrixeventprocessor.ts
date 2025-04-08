@@ -30,7 +30,7 @@ import { DbEvent } from "./db/dbdataevent";
 
 import { Log } from "./log";
 import { IRoomStoreEntry, RemoteStoreRoom } from "./db/roomstore";
-import { Appservice, MatrixClient } from "matrix-bot-sdk";
+import { Appservice, MatrixClient } from "@vector-im/matrix-bot-sdk";
 import { DiscordStore } from "./store";
 import { TimedCache } from "./structures/timedcache";
 
@@ -368,7 +368,7 @@ export class MatrixEventProcessor {
 
         let size = event.content.info.size || 0;
         const name = this.GetFilenameForMediaEvent(event.content);
-        const url = this.bridge.botClient.mxcToHttp(event.content.url);
+        const url = await this.bridge.botClient.mxcToHttp(event.content.url);
         if (size < MaxFileSize) {
             const attachment = (await Util.DownloadFile(url, this.bridge.botClient)).buffer;
             size = attachment.byteLength;
@@ -438,7 +438,7 @@ export class MatrixEventProcessor {
             replyEmbed.setTimestamp(new Date(sourceEvent.origin_server_ts!));
 
             if (this.HasAttachment(sourceEvent)) {
-                const url = this.bridge.botClient.mxcToHttp(sourceEvent.content!.url!);
+                const url = await this.bridge.botClient.mxcToHttp(sourceEvent.content!.url!);
                 if (["m.image", "m.sticker"].includes(sourceEvent.content!.msgtype as string)
                     || sourceEvent.type === "m.sticker") {
                     // we have an image reply
@@ -586,7 +586,7 @@ export class MatrixEventProcessor {
             }
 
             if (profile.avatar_url) {
-                avatarUrl = this.bridge.botClient.mxcToHttpThumbnail(
+                avatarUrl = await this.bridge.botClient.mxcToHttpThumbnail(
                     profile.avatar_url,
                     DISCORD_AVATAR_WIDTH,
                     DISCORD_AVATAR_HEIGHT,

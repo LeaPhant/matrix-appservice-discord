@@ -22,7 +22,7 @@ import { Appservice,
     METRIC_MATRIX_CLIENT_FAILED_FUNCTION_CALL,
     METRIC_MATRIX_CLIENT_SUCCESSFUL_FUNCTION_CALL,
     FunctionCallContext,
-    METRIC_MATRIX_CLIENT_FUNCTION_CALL} from "matrix-bot-sdk";
+    METRIC_MATRIX_CLIENT_FUNCTION_CALL} from "@vector-im/matrix-bot-sdk";
 import { DiscordBridgeConfigMetrics } from "./config";
 import * as http from "http";
 

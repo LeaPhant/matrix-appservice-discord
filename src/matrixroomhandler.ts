@@ -22,7 +22,7 @@ import { Util } from "./util";
 import { Log } from "./log";
 const log = new Log("MatrixRoomHandler");
 import { DbRoomStore, MatrixStoreRoom, RemoteStoreRoom } from "./db/roomstore";
-import { Appservice, Intent, IApplicationServiceProtocol } from "matrix-bot-sdk";
+import { Appservice, Intent, IApplicationServiceProtocol } from "@vector-im/matrix-bot-sdk";
 
 const ICON_URL = "https://matrix.org/_matrix/media/r0/download/matrix.org/mlxoESwIsTbJrfXyAAogrNxA";
 const ROOM_NAME_PARTS = 2;

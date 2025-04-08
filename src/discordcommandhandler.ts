@@ -18,7 +18,7 @@ import * as Discord from "@mx-puppet/better-discord.js";
 import { DiscordBot } from "./bot";
 import { Util, ICommandActions, ICommandParameters, CommandPermissonCheck } from "./util";
 import { Log } from "./log";
-import { Appservice } from "matrix-bot-sdk";
+import { Appservice } from "@vector-im/matrix-bot-sdk";
 
 const log = new Log("DiscordCommandHandler");
 

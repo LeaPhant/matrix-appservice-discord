@@ -24,7 +24,7 @@ import { IMatrixEvent } from "./matrixtypes";
 const HTTP_OK = 200;
 
 import { Log } from "./log";
-import { Intent, MatrixClient } from "matrix-bot-sdk";
+import { Intent, MatrixClient } from "@vector-im/matrix-bot-sdk";
 const log = new Log("Util");
 
 type PERMISSIONTYPES = any | any[]; // tslint:disable-line no-any

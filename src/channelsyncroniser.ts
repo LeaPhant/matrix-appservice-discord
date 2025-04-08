@@ -20,7 +20,7 @@ import { Util } from "./util";
 import { DiscordBridgeConfig, DiscordBridgeConfigChannelDeleteOptions } from "./config";
 import { Log } from "./log";
 import { DbRoomStore, IRoomStoreEntry } from "./db/roomstore";
-import { Appservice } from "matrix-bot-sdk";
+import { Appservice } from "@vector-im/matrix-bot-sdk";
 
 const log = new Log("ChannelSync");
 

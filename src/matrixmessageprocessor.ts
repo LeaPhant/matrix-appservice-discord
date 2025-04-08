@@ -18,7 +18,7 @@ import * as Discord from "@mx-puppet/better-discord.js";
 import { IMatrixMessage } from "./matrixtypes";
 import { Util } from "./util";
 import { DiscordBot } from "./bot";
-import { MatrixClient } from "matrix-bot-sdk";
+import { MatrixClient } from "@vector-im/matrix-bot-sdk";
 import { DiscordBridgeConfig } from "./config";
 import {
     IMatrixMessageParserCallbacks,
@@ -127,9 +127,9 @@ export class MatrixMessageProcessor {
                 }
                 return match[1];
             },
-            mxcUrlToHttp: (mxc: string) => {
+            mxcUrlToHttp: async (mxc: string) => {
                 if (params && params.mxClient) {
-                    return params.mxClient.mxcToHttp(mxc);
+                    return await params.mxClient.mxcToHttp(mxc);
                 }
                 return mxc;
             },

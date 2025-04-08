@@ -24,7 +24,7 @@ import { Postgres } from "./db/postgres";
 import { IDatabaseConnector } from "./db/connector";
 import { DbRoomStore } from "./db/roomstore";
 import { DbUserStore } from "./db/userstore";
-import { IAppserviceStorageProvider } from "matrix-bot-sdk";
+import { IAppserviceStorageProvider } from "@vector-im/matrix-bot-sdk";
 import { UserActivitySet, UserActivity } from "matrix-appservice-bridge";
 import {TimedCache} from "./structures/timedcache";
 const log = new Log("DiscordStore");

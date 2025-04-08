@@ -23,7 +23,7 @@ import { DiscordBridgeConfig } from "../src/config";
 import { Util } from "../src/util";
 import { MockChannel } from "./mocks/channel";
 import { MatrixStoreRoom, RemoteStoreRoom, IRoomStoreEntry } from "../src/db/roomstore";
-import { Appservice } from "matrix-bot-sdk";
+import { Appservice } from "@vector-im/matrix-bot-sdk";
 import { AppserviceMock } from "./mocks/appservicemock";
 
 // we are a test file and thus need those

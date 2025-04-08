@@ -21,7 +21,7 @@ import { DiscordBridgeConfig } from "./config";
 import { Log } from "./log";
 import { IMatrixEvent } from "./matrixtypes";
 import { DbUserStore, RemoteUser } from "./db/userstore";
-import { Appservice, Intent } from "matrix-bot-sdk";
+import { Appservice, Intent } from "@vector-im/matrix-bot-sdk";
 
 const log = new Log("UserSync");
 

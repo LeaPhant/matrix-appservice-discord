@@ -1,5 +1,5 @@
 import { DiscordBridgeConfig } from "../src/config";
-import { Appservice, IAppserviceRegistration } from "matrix-bot-sdk";
+import { Appservice, IAppserviceRegistration } from "@vector-im/matrix-bot-sdk";
 import { DiscordStore } from "../src/store";
 import * as yaml from "js-yaml";
 import * as fs from "fs";

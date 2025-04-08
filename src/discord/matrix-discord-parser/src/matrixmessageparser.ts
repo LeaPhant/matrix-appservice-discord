@@ -32,7 +32,7 @@ export interface IMatrixMessageParserCallbacks {
     getUserId: (mxid: string) => Promise<string | null>;
     getChannelId: (mxid: string) => Promise<string | null>;
     getEmoji: (mxc: string, name: string) => Promise<IDiscordEmoji | null>;
-    mxcUrlToHttp: (mxc: string) => string;
+    mxcUrlToHttp: (mxc: string) => Promise<string | null>;
 }
 
 export interface IMatrixMessageParserUrlShortener {
