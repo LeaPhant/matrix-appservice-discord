@@ -129,7 +129,7 @@ export class MatrixMessageProcessor {
             },
             mxcUrlToHttp: async (mxc: string) => {
                 if (params && params.mxClient) {
-                    return await params.mxClient.mxcToHttp(mxc);
+                    return await Util.MxcToHttpUnauthenticated(mxc, params.mxClient);
                 }
                 return mxc;
             },
