@@ -586,8 +586,9 @@ export class MatrixEventProcessor {
             }
 
             if (profile.avatar_url) {
-                avatarUrl = await this.bridge.botClient.mxcToHttpThumbnail(
+                avatarUrl = await Util.MxcToHttpUnauthenticated(
                     profile.avatar_url,
+                    this.bridge.botClient,
                     DISCORD_AVATAR_WIDTH,
                     DISCORD_AVATAR_HEIGHT,
                     "scale",

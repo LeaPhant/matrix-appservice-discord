@@ -102,6 +102,34 @@ export class Util {
         }) as Promise<IDownloadedFile>;
     }
 
+    public static async MxcToHttpUnauthenticated(mxc: string, mxClient: MatrixClient, width?: number, height?: number, method?: string): Promise<string> {
+        return new Promise((resolve, _) => {
+            const [serverName, mediaId, ...rest] = mxc.slice(6).split("/");
+
+            let verb = 'download';
+
+            if (width !== undefined) {
+                verb = 'thumbnail';
+            }
+
+            const prefix = `/_matrix/client/v1/media/${verb}`;
+
+            const url = new URL(`${prefix}/${serverName}/${mediaId}`, mxClient.homeserverUrl);
+
+            if (width) {
+                url.searchParams.set("width", Math.round(width).toString());
+            }
+            if (height) {
+                url.searchParams.set("height", Math.round(height).toString());
+            }
+            if (method) {
+                url.searchParams.set("method", method);
+            }
+
+            resolve(url.toString())
+        });
+    }
+
     /**
      * Gets a promise that will resolve after the given number of milliseconds
      * @param {number} duration The number of milliseconds to wait
