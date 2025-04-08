@@ -104,6 +104,9 @@ export class Util {
 
     public static async MxcToHttpUnauthenticated(mxc: string, mxClient: MatrixClient, width?: number, height?: number, method?: string): Promise<string> {
         return new Promise(async (resolve, _) => {
+            const authUrl = await mxClient.mxcToHttp(mxc);
+            void this.DownloadFile(authUrl.toString(), mxClient).catch();
+
             const [serverName, mediaId, ...rest] = mxc.slice(6).split("/");
 
             let verb = 'download';
@@ -113,13 +116,8 @@ export class Util {
             }
 
             const prefix = `/_matrix/media/v3/${verb}`;
-            const authPrefix = `/_matrix/client/v1/media/${verb}`;
 
             const url = new URL(`${prefix}/${serverName}/${mediaId}`, mxClient.homeserverUrl);
-            const authUrl = new URL(`${authPrefix}/${serverName}/${mediaId}`, mxClient.homeserverUrl);
-
-            // download file via authenticated endpoint to prevent missing media for the unauthenticated request
-            await this.DownloadFile(authUrl.toString(), mxClient)
 
             if (width) {
                 url.searchParams.set("width", Math.round(width).toString());
