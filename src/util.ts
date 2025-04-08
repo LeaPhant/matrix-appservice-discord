@@ -66,13 +66,19 @@ export class Util {
      * downloadFile - This function will take a URL and store the resulting data into
      * a buffer.
      */
-    public static async DownloadFile(url: string): Promise<IDownloadedFile> {
+    public static async DownloadFile(url: string, mxClient?: MatrixClient): Promise<IDownloadedFile> {
         return new Promise((resolve, reject) => {
             let get = http.get;
             if (url.startsWith("https")) {
                 get = https.get;
             }
-            const req = get((url), (res) => {
+            const headers = {};
+
+            if (mxClient !== undefined) {
+                headers.authorization = `Bearer ${mxClient.accessToken}`
+            }
+
+            const req = get((url), { headers }, (res) => {
                 let buffer = Buffer.alloc(0);
                 if (res.statusCode !== HTTP_OK) {
                     reject(`Non 200 status code (${res.statusCode})`);
