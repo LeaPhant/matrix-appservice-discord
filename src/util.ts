@@ -72,10 +72,11 @@ export class Util {
             if (url.startsWith("https")) {
                 get = https.get;
             }
+
             const headers = {};
 
             if (mxClient !== undefined) {
-                headers.authorization = `Bearer ${mxClient.accessToken}`
+                headers['Authorization'] = `Bearer ${mxClient.accessToken}`;
             }
 
             const req = get((url), { headers }, (res) => {
