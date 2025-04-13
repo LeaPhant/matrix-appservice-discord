@@ -22,6 +22,7 @@ import { DiscordBridgeConfig } from "./config";
 import { DiscordClientFactory } from "./clientfactory";
 import { DiscordStore } from "./store";
 import { DbEmoji } from "./db/dbdataemoji";
+import { DbSticker } from "./db/dbdatasticker";
 import { DbEvent } from "./db/dbdataevent";
 import { DiscordMessageProcessor } from "./discordmessageprocessor";
 import { MatrixEventProcessor, MatrixEventProcessorOpts, IMatrixEventProcessorResult } from "./matrixeventprocessor";
@@ -39,6 +40,16 @@ import { MetricPeg } from "./metrics";
 import { Lock } from "./structures/lock";
 import { Util } from "./util";
 import { BridgeBlocker, UserActivityState, UserActivityTracker } from "matrix-appservice-bridge";
+
+type Sticker = Discord.Base & {
+    id: Discord.Snowflake
+    name: string
+    format: number
+}
+
+type StickerMessage = Discord.Message & {
+    stickers: Discord.Collection<string, Sticker>
+};
 
 const log = new Log("DiscordBot");
 
@@ -782,6 +793,32 @@ export class DiscordBot {
         return urlPreview['og:image'];
     }
 
+    public async GetSticker(name: string, lottie: boolean, id: string): Promise<string> {
+        if (!id.match(/^\d+$/)) {
+            throw new Error("Non-numerical ID");
+        }
+        const dbSticker = await this.store.Get(DbSticker, {sticker_id: id});
+        if (!dbSticker) {
+            throw new Error("Couldn't fetch from store");
+        }
+        if (!dbSticker.Result) {
+            const url = lottie ?
+                `https://discord.com/stickers/${id}.json` :
+                `https://media.discordapp.net/stickers/${id}.png`;
+
+            const intent = this.bridge.botIntent;
+            const content = (await Util.DownloadFile(url)).buffer;
+            const type = lottie ? "application/json" : "image/png";
+            const mxcUrl = await this.bridge.botIntent.underlyingClient.uploadContent(content, type, name);
+            dbSticker.StickerId = id;
+            dbSticker.Name = name;
+            dbSticker.Lottie = lottie;
+            dbSticker.MxcUrl = mxcUrl;
+            await this.store.Insert(dbSticker);
+        }
+        return dbSticker.MxcUrl;
+    }
+
     public async GetRoomIdsFromGuild(
             guild: Discord.Guild, member?: Discord.GuildMember, useCache: boolean = true): Promise<string[]> {
         if (useCache) {
@@ -1212,6 +1249,11 @@ export class DiscordBot {
                         this.userActivity.updateUserActivity(intent.userId);
                     });
                 });
+                console.log(msg as StickerMessage);
+                for (const _sticker of (msg as StickerMessage).stickers.array()) {
+                    const msgtype = "m.sticker";
+                    const sticker = await this.GetSticker(_sticker.name, _sticker.format == 3, _sticker.id);
+                }
             }
             MetricPeg.get.requestOutcome(msg.id, true, "success");
         } catch (err) {

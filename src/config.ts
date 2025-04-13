@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 /*
 Copyright 2017 - 2019 matrix-appservice-discord
 
