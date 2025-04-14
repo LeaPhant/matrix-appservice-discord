@@ -1123,7 +1123,7 @@ export class DiscordBot {
                     return;
                 }
 
-                msg.content = '…';
+                msg.content = `${msg.member?.displayName} is thinking…`;
             }
             const result = await this.discordMsgProcessor.FormatMessage(msg);
             if (!result.body) {
