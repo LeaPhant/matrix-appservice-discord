@@ -1089,6 +1089,13 @@ export class DiscordBot {
                         info.w = attachment.width!;
                         info.h = attachment.height!;
                     }
+
+                    let spoiler = false;
+
+                    if (attachment?.name?.startsWith('SPOILER_')) {
+                        spoiler = true;
+                    }
+
                     await Util.AsyncForEach(rooms, async (room) => {
                         const eventId = await intent.sendEvent(room, {
                             body: attachment.name || "file",
@@ -1096,6 +1103,7 @@ export class DiscordBot {
                             info,
                             msgtype,
                             url: mxcUrl,
+                            "page.codeberg.everypizza.msc4193.spoiler": spoiler
                         });
                         this.lastEventIds[room] = eventId;
                         const evt = new DbEvent();

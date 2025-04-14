@@ -203,9 +203,21 @@ export class MatrixEventProcessor {
         const file = await this.HandleAttachment(event, mxClient, roomLookup.canSendEmbeds);
         // There is a file url, replace description as Matrix messages can't have both a file and text
         if (typeof(file) === "string" && file.length > 0) {
-            embedSet.messageEmbed.description = file;
+            let fileUrl = file;
+
+            if (event.content && event.content["page.codeberg.everypizza.msc4193.spoiler"]) {
+                fileUrl = `||${file}||`;
+            }
+
+            embedSet.messageEmbed.description = fileUrl;
         } else if ((file as Discord.FileOptions).name && (file as Discord.FileOptions).attachment) {
-            opts.files = [file as Discord.FileOptions];
+            const discordFile = file as Discord.FileOptions;
+
+            if (event.content && event.content["page.codeberg.everypizza.msc4193.spoiler"]) {
+                discordFile.name = `SPOILER_${discordFile.name}`;
+            }
+
+            opts.files = [discordFile];
         } else {
             embedSet.imageEmbed = file as Discord.MessageEmbed;
         }
