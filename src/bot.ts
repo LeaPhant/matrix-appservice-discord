@@ -1119,7 +1119,11 @@ export class DiscordBot {
                 });
             }
             if (!msg.content && msg.embeds.length === 0) {
-                return;
+                if (!msg.author.bot) {
+                    return;
+                }
+
+                msg.content = '…';
             }
             const result = await this.discordMsgProcessor.FormatMessage(msg);
             if (!result.body) {
