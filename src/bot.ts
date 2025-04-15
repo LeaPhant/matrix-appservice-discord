@@ -1058,66 +1058,7 @@ export class DiscordBot {
         }
         try {
             const intent = this.GetIntentFromDiscordMember(msg.author, msg.webhookID);
-            // Check Attachements
-            if (!editEventId) {
-                // on discord you can't edit in images, you can only edit text
-                // so it is safe to only check image upload stuff if we don't have
-                // an edit
-                await Util.AsyncForEach(msg.attachments.array(), async (attachment) => {
-                    const content = await Util.DownloadFile(attachment.url);
-                    const fileMime = content.mimeType || mime.getType(attachment.name || "")
-                        || "application/octet-stream";
-                    const mxcUrl = await intent.underlyingClient.uploadContent(
-                        content.buffer,
-                        fileMime,
-                        attachment.name || "",
-                    );
-                    const type = fileMime.split("/")[0];
-                    let msgtype = {
-                        audio: "m.audio",
-                        image: "m.image",
-                        video: "m.video",
-                    }[type];
-                    if (!msgtype) {
-                        msgtype = "m.file";
-                    }
-                    const info = {
-                        mimetype: fileMime,
-                        size: attachment.size,
-                    } as IMatrixMediaInfo;
-                    if (msgtype === "m.image" || msgtype === "m.video") {
-                        info.w = attachment.width!;
-                        info.h = attachment.height!;
-                    }
 
-                    let spoiler = false;
-
-                    if (attachment?.name?.startsWith('SPOILER_')) {
-                        spoiler = true;
-                    }
-
-                    await Util.AsyncForEach(rooms, async (room) => {
-                        const eventId = await intent.sendEvent(room, {
-                            body: attachment.name || "file",
-                            external_url: attachment.url,
-                            info,
-                            msgtype,
-                            url: mxcUrl,
-                            "page.codeberg.everypizza.msc4193.spoiler": spoiler
-                        });
-                        this.lastEventIds[room] = eventId;
-                        const evt = new DbEvent();
-                        evt.MatrixId = `${eventId};${room}`;
-                        evt.DiscordId = msg.id;
-                        evt.ChannelId = msg.channel.id;
-                        if (msg.guild) {
-                            evt.GuildId = msg.guild.id;
-                        }
-                        await this.store.Insert(evt);
-                        this.userActivity.updateUserActivity(intent.userId);
-                    });
-                });
-            }
             if (!msg.content && msg.embeds.length === 0 && msg.attachments.size === 0) {
                 if (!msg.author.bot) {
                     return;
@@ -1197,6 +1138,67 @@ export class DiscordBot {
                     await afterSend(res);
                 }
             });
+
+            // Check Attachements
+            if (!editEventId) {
+                // on discord you can't edit in images, you can only edit text
+                // so it is safe to only check image upload stuff if we don't have
+                // an edit
+                await Util.AsyncForEach(msg.attachments.array(), async (attachment) => {
+                    const content = await Util.DownloadFile(attachment.url);
+                    const fileMime = content.mimeType || mime.getType(attachment.name || "")
+                        || "application/octet-stream";
+                    const mxcUrl = await intent.underlyingClient.uploadContent(
+                        content.buffer,
+                        fileMime,
+                        attachment.name || "",
+                    );
+                    const type = fileMime.split("/")[0];
+                    let msgtype = {
+                        audio: "m.audio",
+                        image: "m.image",
+                        video: "m.video",
+                    }[type];
+                    if (!msgtype) {
+                        msgtype = "m.file";
+                    }
+                    const info = {
+                        mimetype: fileMime,
+                        size: attachment.size,
+                    } as IMatrixMediaInfo;
+                    if (msgtype === "m.image" || msgtype === "m.video") {
+                        info.w = attachment.width!;
+                        info.h = attachment.height!;
+                    }
+
+                    let spoiler = false;
+
+                    if (attachment?.name?.startsWith('SPOILER_')) {
+                        spoiler = true;
+                    }
+
+                    await Util.AsyncForEach(rooms, async (room) => {
+                        const eventId = await intent.sendEvent(room, {
+                            body: attachment.name || "file",
+                            external_url: attachment.url,
+                            info,
+                            msgtype,
+                            url: mxcUrl,
+                            "page.codeberg.everypizza.msc4193.spoiler": spoiler
+                        });
+                        this.lastEventIds[room] = eventId;
+                        const evt = new DbEvent();
+                        evt.MatrixId = `${eventId};${room}`;
+                        evt.DiscordId = msg.id;
+                        evt.ChannelId = msg.channel.id;
+                        if (msg.guild) {
+                            evt.GuildId = msg.guild.id;
+                        }
+                        await this.store.Insert(evt);
+                        this.userActivity.updateUserActivity(intent.userId);
+                    });
+                });
+            }
             MetricPeg.get.requestOutcome(msg.id, true, "success");
         } catch (err) {
             MetricPeg.get.requestOutcome(msg.id, true, "fail");
