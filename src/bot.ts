@@ -1118,7 +1118,7 @@ export class DiscordBot {
                     });
                 });
             }
-            if (!msg.content && msg.embeds.length === 0) {
+            if (!msg.content && msg.embeds.length === 0 && msg.attachments.size === 0) {
                 if (!msg.author.bot) {
                     return;
                 }
