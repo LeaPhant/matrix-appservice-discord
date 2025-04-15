@@ -1067,77 +1067,77 @@ export class DiscordBot {
                 msg.content = `${msg.member?.displayName} is thinking…`;
             }
             const result = await this.discordMsgProcessor.FormatMessage(msg);
-            if (!result.body) {
-                return;
-            }
-            await Util.AsyncForEach(rooms, async (room) => {
-                const sendContent: IMatrixMessage = {
-                    body: result.body,
-                    format: "org.matrix.custom.html",
-                    formatted_body: result.formattedBody,
-                    msgtype: result.msgtype,
-                };
-                let relatesTo: any = null;
-                if (msg.reference) {
-                    const storeEvent = await this.store.Get(DbEvent, {discord_id: msg.reference?.messageID})
-                    if (storeEvent && storeEvent.Result)
-                    {
-                        while(storeEvent.Next())
-                        {
-                            relatesTo = {
-                                "m.in_reply_to": {
-                                    event_id: storeEvent.MatrixId.split(";")[0]
-                                }
-                            };
-                        }
-                    }
-                }
-                if (editEventId) {
-                    sendContent.body = `* ${result.body}`;
-                    sendContent.formatted_body = `* ${result.formattedBody}`;
-                    sendContent["m.new_content"] = {
+
+            if (result.body) {
+                await Util.AsyncForEach(rooms, async (room) => {
+                    const sendContent: IMatrixMessage = {
                         body: result.body,
                         format: "org.matrix.custom.html",
                         formatted_body: result.formattedBody,
                         msgtype: result.msgtype,
                     };
-                    if (relatesTo === null) relatesTo = {}
-                    relatesTo.event_id = editEventId;
-                    relatesTo.rel_type = "m.replace";
-                }
-                if (relatesTo !== null) sendContent["m.relates_to"] = relatesTo;
+                    let relatesTo: any = null;
+                    if (msg.reference) {
+                        const storeEvent = await this.store.Get(DbEvent, {discord_id: msg.reference?.messageID})
+                        if (storeEvent && storeEvent.Result)
+                        {
+                            while(storeEvent.Next())
+                            {
+                                relatesTo = {
+                                    "m.in_reply_to": {
+                                        event_id: storeEvent.MatrixId.split(";")[0]
+                                    }
+                                };
+                            }
+                        }
+                    }
+                    if (editEventId) {
+                        sendContent.body = `* ${result.body}`;
+                        sendContent.formatted_body = `* ${result.formattedBody}`;
+                        sendContent["m.new_content"] = {
+                            body: result.body,
+                            format: "org.matrix.custom.html",
+                            formatted_body: result.formattedBody,
+                            msgtype: result.msgtype,
+                        };
+                        if (relatesTo === null) relatesTo = {}
+                        relatesTo.event_id = editEventId;
+                        relatesTo.rel_type = "m.replace";
+                    }
+                    if (relatesTo !== null) sendContent["m.relates_to"] = relatesTo;
 
-                const trySend = async () => intent.sendEvent(room, sendContent);
-                const afterSend = async (eventId) => {
-                    this.lastEventIds[room] = eventId;
-                    const evt = new DbEvent();
-                    evt.MatrixId = `${eventId};${room}`;
-                    evt.DiscordId = msg.id;
-                    evt.ChannelId = msg.channel.id;
-                    if (msg.guild) {
-                        evt.GuildId = msg.guild.id;
+                    const trySend = async () => intent.sendEvent(room, sendContent);
+                    const afterSend = async (eventId) => {
+                        this.lastEventIds[room] = eventId;
+                        const evt = new DbEvent();
+                        evt.MatrixId = `${eventId};${room}`;
+                        evt.DiscordId = msg.id;
+                        evt.ChannelId = msg.channel.id;
+                        if (msg.guild) {
+                            evt.GuildId = msg.guild.id;
+                        }
+                        await this.store.Insert(evt);
+                        this.userActivity.updateUserActivity(intent.userId);
+                    };
+                    let res;
+                    try {
+                        res = await trySend();
+                        await afterSend(res);
+                    } catch (e) {
+                        if (e.errcode !== "M_FORBIDDEN" && e.errcode !==  "M_GUEST_ACCESS_FORBIDDEN") {
+                            log.error("Failed to send message into room.", e);
+                            return;
+                        }
+                        if (msg.member && !msg.webhookID) {
+                            await this.userSync.JoinRoom(msg.member, room);
+                        } else {
+                            await this.userSync.JoinRoom(msg.author, room, Boolean(msg.webhookID));
+                        }
+                        res = await trySend();
+                        await afterSend(res);
                     }
-                    await this.store.Insert(evt);
-                    this.userActivity.updateUserActivity(intent.userId);
-                };
-                let res;
-                try {
-                    res = await trySend();
-                    await afterSend(res);
-                } catch (e) {
-                    if (e.errcode !== "M_FORBIDDEN" && e.errcode !==  "M_GUEST_ACCESS_FORBIDDEN") {
-                        log.error("Failed to send message into room.", e);
-                        return;
-                    }
-                    if (msg.member && !msg.webhookID) {
-                        await this.userSync.JoinRoom(msg.member, room);
-                    } else {
-                        await this.userSync.JoinRoom(msg.author, room, Boolean(msg.webhookID));
-                    }
-                    res = await trySend();
-                    await afterSend(res);
-                }
-            });
+                });
+            }
 
             // Check Attachements
             if (!editEventId) {
