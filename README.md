@@ -1,3 +1,31 @@
+# Matrix Discord Bridge Fork
+
+This is an optinionated fork of [matrix-appservice-discord](https://github.com/LeaPhant/matrix-appservice-discord) I'm personally maintaining for my own bridge, aiming to fix a lot of the shortcomings for smooth interaction between Matrix and Discord users of my community. It's usable by anyone and as of now a drop-in replacement, but I can't give guarantees for stability/security in production as this is just a one person project I work on occasionally.
+
+### Features:
+- Change to a monorepo structure for easier maintenance
+- Merge [#878](https://github.com/matrix-org/matrix-appservice-discord/pull/878) for native Discord->Matrix replies
+- Prettier replies from Matrix->Discord that fool Discord users into thinking they're the real thing
+
+  ![Screenshot of bridged reply](https://boob.li/Z34WuL.png) 
+- Properly resolve Matrix->Discord user mentions
+- Remove attachment name from Matrix->Discord bridged media
+- Fix Discord messages with attachments losing their attachment when editing
+- Fix deferred application commands not bridging
+- Attachment spoiler tag bridging (bidirectional, Matrix side only supported on select clients like Cinny)
+- Native Matrix->Discord message edits.
+- Use authenticated media endpoints to bridge Matrix media 
+
+### Planned:
+- Native Matrix->Discord emoji bridging via bot-owned Discord guilds 
+  > Probably only suitable for smaller scale deployments depending on the rate limits
+- Discord->Matrix sticker bridging
+- Discord->Matrix message forwards bridging
+  > Proper implementation will require an upgrade to Discord.js 14, I've started working on this but it's kind of a mammoth task.
+
+> [!NOTE]  
+> Below follows the original `README.md`
+
 # Matrix Discord Bridge
 
 A bridge between [Matrix](http://matrix.org/) and [Discord](https://discord.com/).
