@@ -1245,6 +1245,8 @@ export class DiscordBot {
                 } else {
                     msg.content = FORWARD_HEADER;
                 }
+
+                msg.reference = null;
             }
 
             this.clientFactory.bindMetricsToChannel(msg.channel as Discord.TextChannel);
