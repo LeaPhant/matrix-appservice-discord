@@ -256,6 +256,20 @@ const rulesDiscord = {
             return htmlDiscordTag(state.discordCallbacks.emoji(node), { class: `d-emoji${node.animated ? ' d-emoji-animated' : ''}` }, state);
         }
     },
+    fakeNitroEmoji: {
+        order: markdown.defaultRules.strong.order,
+        match: source => /\[\w+\]\(https:\/\/cdn\.discordapp\.com\/emojis\/(\d+)\.(\w+).+name=(\w+)\)/.exec(source),
+        parse: function(capture) {
+            return {
+                animated: capture[2] === "gif",
+                name: capture[3],
+                id: capture[1],
+            };
+        },
+        html: function(node, output, state) {
+            return htmlDiscordTag(state.discordCallbacks.emoji(node), { class: `d-emoji${node.animated ? ' d-emoji-animated' : ''}` }, state);
+        }
+    },
     discordEveryone: {
         order: markdown.defaultRules.strong.order,
         match: source => /^@everyone/.exec(source),
