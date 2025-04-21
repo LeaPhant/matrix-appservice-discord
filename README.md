@@ -7,6 +7,9 @@ This is an optinionated fork of [matrix-appservice-discord](https://github.com/L
 - [x] Support Discord->Matrix stickers
   > Lottie stickers are converted to APNG via [lottie-converter](https://github.com/ed-asriyan/lottie-converter) if podman is available 
 - [x] Native Discord->Matrix replies (via [#878](https://github.com/matrix-org/matrix-appservice-discord/pull/878))
+- [x] Prettier Discord->Matrix Embeds
+
+  ![Screenshot of bridged Discord embed on Matrix](https://boob.li/neJE5J.png)
 - [x] Prettier replies from Matrix->Discord that fool Discord users into thinking they're the real thing
 
   ![Screenshot of bridged reply](https://boob.li/Z34WuL.png) 
