@@ -1,6 +1,7 @@
 const markdown = require('simple-markdown');
 const highlight = require('highlight.js');
 const emoji = require("node-emoji");
+const { fromUnixTime, format, formatDistanceToNow } = require('date-fns');
 
 function htmlTag(tagName, content, attributes, isClosed = true, state = { }) {
     if (typeof isClosed === 'object') {
@@ -268,6 +269,47 @@ const rulesDiscord = {
         },
         html: function(node, output, state) {
             return htmlDiscordTag(state.discordCallbacks.emoji(node), { class: `d-emoji${node.animated ? ' d-emoji-animated' : ''}` }, state);
+        }
+    },
+    discordTimestamp: {
+        order: markdown.defaultRules.strong.order,
+        match: source => /^<t:(\d+):?(\w?)>/.exec(source),
+        parse: function(capture) {
+            return {
+                time: capture[1],
+                format: capture[2]
+            };
+        },
+        html: function(node, output, state) {
+            let time = fromUnixTime(node.time);
+            let timestamp = '';
+
+            switch (node.format) {
+            case 't':
+                timestamp = format(time, 'hh:mm aa');
+                break;
+            case 'T':
+                timestamp = format(time, 'hh:mm:ss aa');
+                break;
+            case 'd':
+                timestamp = format(time, 'yyyy-MM-dd');
+                break;
+            case 'D':
+                timestamp = format(time, 'MMMM d, yyyy');
+                break;
+            case 'f':
+                timestamp = format(time, 'MMMM d, yyyy hh:mm aa');
+                break;
+            case 'F':
+                timestamp = format(time, 'MMMM d, yyyy hh:mm:ss aa');
+                break;
+            case 'R':
+                timestamp = formatDistanceToNow(time, { addSuffix: true });
+                break;
+            default:
+                timestamp = time.toISOString();
+            }
+            return htmlDiscordTag(timestamp, { class: 'd-timestamp' }, state);
         }
     },
     discordEveryone: {
