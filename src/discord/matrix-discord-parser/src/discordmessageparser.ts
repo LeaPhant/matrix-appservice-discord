@@ -231,7 +231,7 @@ export class DiscordMessageParser {
                 if (embed.author.proxyIconURL) {
                     embedContent += `<img data-mx-emoticon height="24" src="\x01proxy\x01${embed.author.proxyIconURL}\x01">&nbsp;`;
                 }
-                embedContent += `<strong>${escapeHtml(embed.author.name)}</strong>`;
+                embedContent += `<strong>${escapeHtml(embed.author.name)}</strong><br>`;
             }
             const embedTitle = embed.url ?
                 `<a href="${escapeHtml(embed.url)}">${escapeHtml(embed.title)}</a>`
@@ -286,7 +286,7 @@ export class DiscordMessageParser {
                 }
             }
             if (embed.image) {
-                embedContent += `<img src="\x01proxy\x01${embed.image.proxyURL}\x01">`;
+                embedContent += `<img src="\x01proxy\x01${embed.image.proxyURL}\x01"><br>`;
             }
             if (embed.footer) {
                 embedContent += '<h6>';
