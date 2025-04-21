@@ -21,7 +21,7 @@ import { ISqlCommandParameters } from "./connector";
 export class DbSticker implements IDbData {
     public StickerId: string;
     public Name: string;
-    public Lottie: boolean;
+    public Type: string;
     public MxcUrl: string;
     public CreatedAt: number;
     public UpdatedAt: number;
@@ -46,7 +46,7 @@ export class DbSticker implements IDbData {
         if (this.Result && row) {
             this.StickerId = row.emoji_id as string;
             this.Name = row.name as string;
-            this.Lottie = Boolean(row.lottie);
+            this.Type = row.type as string;
             this.MxcUrl = row.mxc_url as string;
             this.CreatedAt = row.created_at as number;
             this.UpdatedAt = row.updated_at as number;
@@ -58,12 +58,12 @@ export class DbSticker implements IDbData {
         this.UpdatedAt = this.CreatedAt;
         await store.db.Run(`
             INSERT INTO sticker
-            (sticker_id,name,lottie,mxc_url,created_at,updated_at)
-            VALUES ($sticker_id,$name,$lottie,$mxc_url,$created_at,$updated_at);`, {
+            (sticker_id,name,type,mxc_url,created_at,updated_at)
+            VALUES ($sticker_id,$type,$type,$mxc_url,$created_at,$updated_at);`, {
             /* eslint-disable @typescript-eslint/naming-convention */
-            lottie: Number(this.Lottie),
+            sticker_id: this.StickerId,
+            type: this.Type,
             created_at: this.CreatedAt,
-            emoji_id: this.StickerId,
             mxc_url: this.MxcUrl,
             name: this.Name,
             updated_at: this.UpdatedAt,
@@ -77,13 +77,13 @@ export class DbSticker implements IDbData {
         await store.db.Run(`
             UPDATE sticker
             SET name = $name,
-            lottie = $lottie,
+            type = $type,
             mxc_url = $mxc_url,
             updated_at = $updated_at
             WHERE
             sticker_id = $sticker_id`, {
             /* eslint-disable @typescript-eslint/naming-convention */
-            animated: Number(this.Lottie),
+            type: this.Type,
             sticker_id: this.StickerId,
             mxc_url: this.MxcUrl,
             name: this.Name,

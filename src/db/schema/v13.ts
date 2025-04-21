@@ -27,7 +27,7 @@ export class Schema implements IDbSchema {
             CREATE TABLE sticker (
                 sticker_id TEXT NOT NULL,
                 name TEXT NOT NULL,
-                lottie INTEGER NOT NULL,
+                type TEXT NOT NULL,
                 mxc_url TEXT NOT NULL,
                 created_at BIGINT NOT NULL,
                 updated_at BIGINT NOT NULL,
