@@ -33,7 +33,7 @@ const REGISTERED_USERS_CACHE_LIFETIME_MILLIS = 60 * 60 * 1000; // 60 minutes
 const TX_IDS_CACHE_LIFETIME_MILLIS = 10 * 60 * 1000; // 10 minutes
 const CACHE_CLEANUP_MILLIS = 30 * 1000; // 30 seconds
 
-export const CURRENT_SCHEMA = 12;
+export const CURRENT_SCHEMA = 13;
 /**
  * Stores data for specific users and data not specific to rooms.
  */

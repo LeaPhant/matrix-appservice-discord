@@ -4,6 +4,8 @@ This is an optinionated fork of [matrix-appservice-discord](https://github.com/L
 
 ### Features:
 - [x] Change to a monorepo structure for easier maintenance
+- [x] Support Discord->Matrix stickers
+  > Lottie stickers are converted to APNG via [lottie-converter](https://github.com/ed-asriyan/lottie-converter) if docker is available 
 - [x] Native Discord->Matrix replies (via [#878](https://github.com/matrix-org/matrix-appservice-discord/pull/878))
 - [x] Prettier replies from Matrix->Discord that fool Discord users into thinking they're the real thing
 
