@@ -11,7 +11,7 @@
     "test": "mocha -r ts-node/register test/config.ts test/test_*.ts test/**/test_*.ts",
     "lint": "eslint -c .eslintrc --max-warnings 200 src/**/*.ts test/**/*.ts",
     "coverage": "tsc && nyc mocha build/test/config.js build/test",
-    "build": "tsc && cp ./src/discord/matrix-discord-parser/lib/src/discord-markdown.js ./build/src/discord/matrix-discord-parser/src/",
+    "build": "tsc && cp ./src/discord/matrix-discord-parser/src/discord-markdown.js ./build/src/discord/matrix-discord-parser/src/",
     "postinstall": "yarn build",
     "start": "node ./build/src/discordas.js",
     "debug": "node --inspect ./build/src/discordas.js",
