@@ -164,7 +164,7 @@ export class DiscordMessageParser {
             if (embed.author && embed.author.name) {
                 embedContent += `**${escapeHtml(embed.author.name)}**`;
             }
-            const embedTitle = embed.title;
+            const embedTitle = embed.url ? `[${embed.title}](${embed.url})` : embed.title;
             if (embedTitle) {
                 embedContent += "\n##### " + embedTitle; // h5 is probably best.
             }
@@ -258,13 +258,28 @@ export class DiscordMessageParser {
                 }) + "</p>";
             }
             if (embed.fields) {
+                let tableOpen = false;
+                let inlineIndex = 0;
                 for (const [index, field] of embed.fields.entries()) {
                     if (!field.inline) {
+                        if (tableOpen) {
+                            if (inlineIndex > 0) {
+                                embedContent += '</tr>';
+                            }
+                            embedContent += '</table>';
+                        }
                         embedContent += '<p>';
                     } else {
-                        if (index > 0) {
-                            embedContent += '<br>';
+                        if (inlineIndex == 0) {
+                            if (!tableOpen) {
+                                embedContent += '<table>';
+                            }
+                            embedContent += '<tr>';
+                            tableOpen = true;
                         }
+                    }
+                    if (field.inline) {
+                        embedContent += '<th>';
                     }
                     embedContent += `<strong>`;
                     embedContent += markdown.toHTML(field.name, {
@@ -274,11 +289,10 @@ export class DiscordMessageParser {
                         noExtraSpanTags: true,
                         noHighlightCode: true,
                     });
-                    if (field.inline) {
-                        embedContent += ': ';
-                    }
                     embedContent += `</strong>`;
-                    if (!field.inline) {
+                    if (field.inline) {
+                        embedContent += '&nbsp;&nbsp;<br>';
+                    } else {
                         embedContent += '<br>';
                     }
                     embedContent += markdown.toHTML(field.value, {
@@ -290,6 +304,12 @@ export class DiscordMessageParser {
                     });
                     if (!field.inline) {
                         embedContent += '</p>';
+                    } else {
+                        embedContent += '&nbsp;&nbsp;</th>';
+                        if (++inlineIndex >= 3) {
+                            embedContent += '</tr>';
+                            inlineIndex = 0;
+                        }
                     }
                 }
             }
