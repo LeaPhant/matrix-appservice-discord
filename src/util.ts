@@ -161,7 +161,7 @@ export class Util {
     public static async ConvertLottieToApng(data: Buffer): Promise<Buffer> {
         const dir = await fs.mkdtemp(path.join(tmpdir(), path.sep));
         await fs.writeFile(path.resolve(dir, 'sticker.json'), data);
-        await execFile('docker', ['run', '--rm', '-e', 'HEIGHT=320', '-e', 'WIDTH=320',  '-v', `${dir}:/source`, 'edasriyan/lottie-to-apng']);
+        await execFile('podman', ['run', '--rm', '-e', 'HEIGHT=320', '-e', 'WIDTH=320',  '-v', `${dir}:/source`, 'docker.io/edasriyan/lottie-to-apng']);
         return await fs.readFile(path.resolve(dir, 'sticker.json.apng'));
     }
 
