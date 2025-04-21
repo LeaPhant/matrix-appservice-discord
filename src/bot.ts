@@ -41,15 +41,15 @@ import { Lock } from "./structures/lock";
 import { Util } from "./util";
 import { BridgeBlocker, UserActivityState, UserActivityTracker } from "matrix-appservice-bridge";
 
-type Sticker = Discord.Base & {
-    id: Discord.Snowflake
-    name: string
-    format: number
-}
-
-type StickerMessage = Discord.Message & {
-    stickers: Discord.Collection<string, Sticker>
+const DISCORD_STICKER_TYPE = {
+    1: 'image/png',
+    2: 'image/png',
+    3: 'application/json',
+    4: 'image/gif'
 };
+
+const DISCORD_STICKER_WIDTH = 320;
+const DISCORD_STICKER_HEIGHT = DISCORD_STICKER_WIDTH;
 
 const log = new Log("DiscordBot");
 
@@ -125,6 +125,7 @@ export class DiscordBot {
     /* Handles messages queued up to be sent to matrix from discord. */
     private discordMessageQueue: { [channelId: string]: Promise<void> };
     private forwardedMessageCache: { [messageId: string]: any };
+    private stickerItemCache: { [messageId: string]: any };
     private channelLock: Lock<string>;
     private typingTimers: Record<string, NodeJS.Timeout> = {}; // DiscordUser+channel -> Timeout
 
@@ -165,6 +166,7 @@ export class DiscordBot {
         this.sentMessages = [];
         this.discordMessageQueue = {};
         this.forwardedMessageCache = {};
+        this.stickerItemCache = {};
         this.channelLock = new Lock(this.config.limits.discordSendDelay);
         this.lastEventIds = {};
 
@@ -282,6 +284,11 @@ export class DiscordBot {
         });
 
         client.ws.on('MESSAGE_CREATE', async (data) => {
+            if (data.sticker_items && data.sticker_items.length > 0) {
+                this.stickerItemCache[data.id] = data.sticker_items;
+                return;
+            }
+
             if (data.message_reference?.type != 1
                 || !Array.isArray(data.message_snapshots)
                 || data.message_snapshots.length < 1) {
@@ -793,7 +800,7 @@ export class DiscordBot {
         return urlPreview['og:image'];
     }
 
-    public async GetSticker(name: string, lottie: boolean, id: string): Promise<string> {
+    public async GetSticker(name: string, type: string, id: string): Promise<string> {
         if (!id.match(/^\d+$/)) {
             throw new Error("Non-numerical ID");
         }
@@ -802,17 +809,16 @@ export class DiscordBot {
             throw new Error("Couldn't fetch from store");
         }
         if (!dbSticker.Result) {
-            const url = lottie ?
+            const ext = type.split('/').pop();
+            const url = ext == 'json' ?
                 `https://discord.com/stickers/${id}.json` :
-                `https://media.discordapp.net/stickers/${id}.png`;
+                `https://media.discordapp.net/stickers/${id}.${ext}`;
 
-            const intent = this.bridge.botIntent;
             const content = (await Util.DownloadFile(url)).buffer;
-            const type = lottie ? "application/json" : "image/png";
             const mxcUrl = await this.bridge.botIntent.underlyingClient.uploadContent(content, type, name);
             dbSticker.StickerId = id;
             dbSticker.Name = name;
-            dbSticker.Lottie = lottie;
+            dbSticker.Type = type;
             dbSticker.MxcUrl = mxcUrl;
             await this.store.Insert(dbSticker);
         }
@@ -1111,11 +1117,11 @@ export class DiscordBot {
             const intent = this.GetIntentFromDiscordMember(msg.author, msg.webhookID);
 
             if (!msg.content && msg.embeds.length === 0 && msg.attachments.size === 0) {
-                if (!msg.author.bot) {
+                if (msg.author.bot) {
+                    msg.content = `${msg.member?.displayName} is thinking…`;
+                } else if (!this.stickerItemCache[msg.id]) {
                     return;
                 }
-
-                msg.content = `${msg.member?.displayName} is thinking…`;
             }
             const result = await this.discordMsgProcessor.FormatMessage(msg);
 
@@ -1249,11 +1255,33 @@ export class DiscordBot {
                         this.userActivity.updateUserActivity(intent.userId);
                     });
                 });
-                console.log(msg as StickerMessage);
-                for (const _sticker of (msg as StickerMessage).stickers.array()) {
-                    const msgtype = "m.sticker";
-                    const sticker = await this.GetSticker(_sticker.name, _sticker.format == 3, _sticker.id);
+                for (const sticker of this.stickerItemCache[msg.id] ?? []) {
+                    const type = DISCORD_STICKER_TYPE[sticker.format_type];
+                    const mxcUrl = await this.GetSticker(sticker.name, type, sticker.id);
+                    const info = {
+                        mimetype: type,
+                        w: DISCORD_STICKER_WIDTH,
+                        h: DISCORD_STICKER_HEIGHT
+                    } as IMatrixMediaInfo;
+                    await Util.AsyncForEach(rooms, async (room) => {
+                        const eventId = await intent.underlyingClient.sendEvent(room, "m.sticker", {
+                            body: sticker.name || "sticker",
+                            info,
+                            url: mxcUrl
+                        });
+                        this.lastEventIds[room] = eventId;
+                        const evt = new DbEvent();
+                        evt.MatrixId = `${eventId};${room}`;
+                        evt.DiscordId = msg.id;
+                        evt.ChannelId = msg.channel.id;
+                        if (msg.guild) {
+                            evt.GuildId = msg.guild.id;
+                        }
+                        await this.store.Insert(evt);
+                        this.userActivity.updateUserActivity(intent.userId);
+                    });
                 }
+                delete this.stickerItemCache[msg.id];
             }
             MetricPeg.get.requestOutcome(msg.id, true, "success");
         } catch (err) {
@@ -1280,27 +1308,27 @@ export class DiscordBot {
 
                 const forwardedMsg = this.forwardedMessageCache[msg.id];
 
-                if (!forwardedMsg) {
+                if (forwardedMsg) {
+                    msg.content = forwardedMsg.content;
+
+                    for (const data of forwardedMsg.embeds) {
+                        msg.embeds.push(new Discord.MessageEmbed(data));
+                    }
+
+                    for (const data of forwardedMsg.attachments) {
+                        msg.attachments.set(data.id, data);
+                    }
+
+                    if (msg.content.length > 0) {
+                        msg.content = `${FORWARD_HEADER}\n${msg.content}`
+                    } else {
+                        msg.content = FORWARD_HEADER;
+                    }
+
+                    msg.reference = null;
+                } else if (!this.stickerItemCache[msg.id]) {
                     return;
                 }
-
-                msg.content = forwardedMsg.content;
-
-                for (const data of forwardedMsg.embeds) {
-                    msg.embeds.push(new Discord.MessageEmbed(data));
-                }
-
-                for (const data of forwardedMsg.attachments) {
-                    msg.attachments.set(data.id, data);
-                }
-
-                if (msg.content.length > 0) {
-                    msg.content = `${FORWARD_HEADER}\n${msg.content}`
-                } else {
-                    msg.content = FORWARD_HEADER;
-                }
-
-                msg.reference = null;
             }
 
             this.clientFactory.bindMetricsToChannel(msg.channel as Discord.TextChannel);
