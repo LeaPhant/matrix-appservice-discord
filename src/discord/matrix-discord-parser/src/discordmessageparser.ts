@@ -28,6 +28,9 @@ const NAME_MXC_INSERT_REGEX_GROUP = 1;
 const ANIMATED_MXC_INSERT_REGEX_GROUP = 2;
 const ID_MXC_INSERT_REGEX_GROUP = 3;
 const EMOJI_SIZE = 32;
+
+const MXC_PROXY_INSERT_REGEX = /\x01proxy\x01(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))\x01/;
+
 const MAX_EDIT_MSG_LENGTH = 50;
 
 // same as above, no global flag here, too
@@ -47,6 +50,7 @@ export interface IDiscordMessageParserCallbacks {
     getUser: (id: string) => Promise<IDiscordMessageParserEntity | null>;
     getChannel: (id: string) => Promise<IDiscordMessageParserEntity | null>;
     getEmoji: (name: string, animated: boolean, id: string) => Promise<string | null>;
+    getDiscordContent: (url: string) => Promise<string | null>;
 }
 
 export interface IDiscordMessageParserOpts {
@@ -157,12 +161,12 @@ export class DiscordMessageParser {
                 continue;
             }
             let embedContent = content ? "\n\n----" : "";
+            if (embed.author && embed.author.name) {
+                embedContent += `**${escapeHtml(embed.author.name)}**`;
+            }
             const embedTitle = embed.url ? `[${embed.title}](${embed.url})` : embed.title;
             if (embedTitle) {
                 embedContent += "\n##### " + embedTitle; // h5 is probably best.
-            }
-            if (embed.author && embed.author.name) {
-                embedContent += `\n**${escapeHtml(embed.author.name)}**`;
             }
             if (embed.description) {
                 embedContent += "\n" + markdown.toHTML(embed.description, {
@@ -197,7 +201,7 @@ export class DiscordMessageParser {
                 }
             }
             if (embed.image) {
-                embedContent += "\nImage: " + embed.image.url;
+                embedContent += `\n[!](\x01proxy\x01${embed.image.proxyURL}\x01)`;
             }
             if (embed.footer) {
                 embedContent += "\n" + markdown.toHTML(embed.footer.text, {
@@ -223,14 +227,17 @@ export class DiscordMessageParser {
                 continue;
             }
             let embedContent = content ? "<hr>" : "";
+            if (embed.author && embed.author.name) {
+                if (embed.author.proxyIconURL) {
+                    embedContent += `<img data-mx-emoticon height="24" src="\x01proxy\x01${embed.author.proxyIconURL}\x01">&nbsp;`;
+                }
+                embedContent += `<strong>${escapeHtml(embed.author.name)}</strong>`;
+            }
             const embedTitle = embed.url ?
                 `<a href="${escapeHtml(embed.url)}">${escapeHtml(embed.title)}</a>`
                 : (embed.title ? escapeHtml(embed.title) : undefined);
             if (embedTitle) {
                 embedContent += `<h5>${embedTitle}</h5>`; // h5 is probably best.
-            }
-            if (embed.author && embed.author.name) {
-                embedContent += `<strong>${escapeHtml(embed.author.name)}</strong><br>`;
             }
             if (embed.description) {
                 embedContent += "<p>";
@@ -243,8 +250,15 @@ export class DiscordMessageParser {
                 }) + "</p>";
             }
             if (embed.fields) {
-                for (const field of embed.fields) {
-                    embedContent += `<p><strong>`;
+                for (const [index, field] of embed.fields.entries()) {
+                    if (!field.inline) {
+                        embedContent += '<p>';
+                    } else {
+                        if (index > 0) {
+                            embedContent += '<br>';
+                        }
+                    }
+                    embedContent += `<strong>`;
                     embedContent += markdown.toHTML(field.name, {
                         discordCallback: this.getDiscordParseCallbacks(opts, msg),
                         embed: true,
@@ -252,29 +266,41 @@ export class DiscordMessageParser {
                         noExtraSpanTags: true,
                         noHighlightCode: true,
                     });
-                    embedContent += `</strong><br>`;
+                    if (field.inline) {
+                        embedContent += ': ';
+                    }
+                    embedContent += `</strong>`;
+                    if (!field.inline) {
+                        embedContent += '<br>';
+                    }
                     embedContent += markdown.toHTML(field.value, {
                         discordCallback: this.getDiscordParseCallbacks(opts, msg),
                         embed: true,
                         isBot: msg.author ? msg.author.bot : false,
                         noExtraSpanTags: true,
                         noHighlightCode: true,
-                    }) + "</p>";
+                    });
+                    if (!field.inline) {
+                        embedContent += '</p>';
+                    }
                 }
             }
             if (embed.image) {
-                const imgUrl = escapeHtml(embed.image.url);
-                embedContent += `<p>Image: <a href="${imgUrl}">${imgUrl}</a></p>`;
+                embedContent += `<img src="\x01proxy\x01${embed.image.proxyURL}\x01">`;
             }
             if (embed.footer) {
-                embedContent += "<p>";
+                embedContent += '<h6>';
+                if (embed.footer.proxyIconURL) {
+                    embedContent += `<img data-mx-emoticon height="24" src="\x01proxy\x01${embed.footer.proxyIconURL}\x01">&nbsp;`;
+                }
                 embedContent += markdown.toHTML(embed.footer.text, {
                     discordCallback: this.getDiscordParseCallbacksHTML(opts, msg),
                     embed: true,
                     isBot: msg.author ? msg.author.bot : false,
                     noExtraSpanTags: true,
                     noHighlightCode: true,
-                }) + "</p>";
+                });
+                embedContent += '</h6>';
             }
             content += embedContent;
         }
@@ -363,6 +389,19 @@ export class DiscordMessageParser {
             }
             content = content.replace(results[0], replace);
             results = MXC_INSERT_REGEX.exec(content);
+        }
+        let proxyResults = MXC_PROXY_INSERT_REGEX.exec(content);
+        while (proxyResults !== null) {
+            const url = proxyResults[1];
+            let replace = "";
+            const mxcUrl = await opts.callbacks.getDiscordContent(url);
+            if (mxcUrl) {
+                replace = mxcUrl;
+            } else {
+                replace = proxyResults[1];
+            }
+            content = content.replace(proxyResults[0], replace);
+            proxyResults = MXC_PROXY_INSERT_REGEX.exec(content);
         }
         return content;
     }

@@ -770,6 +770,18 @@ export class DiscordBot {
         return dbEmoji.MxcUrl;
     }
 
+    public async GetDiscordContent(location: string): Promise<string> {
+        const url = new URL(location);
+        if (!url.hostname.endsWith('.discordapp.net')) {
+            throw new Error("Not a valid Discord content URL");
+        }
+        const urlPreview = await Util.PreviewUrl(url.href, this.bridge.botIntent.underlyingClient);
+        if (urlPreview?.['og:image'] == undefined) {
+            throw new Error("URL did not return image");
+        }
+        return urlPreview['og:image'];
+    }
+
     public async GetRoomIdsFromGuild(
             guild: Discord.Guild, member?: Discord.GuildMember, useCache: boolean = true): Promise<string[]> {
         if (useCache) {

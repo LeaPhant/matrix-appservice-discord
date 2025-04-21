@@ -61,6 +61,19 @@ export interface IPatternMap {
     [index: string]: string;
 }
 
+export interface IPreviewUrlResponse {
+    [key: string]: undefined | string | number;
+    "og:title": string;
+    "og:type": string;
+    "og:url": string;
+    "og:image"?: string;
+    "og:image:type"?: string;
+    "og:image:height"?: number;
+    "og:image:width"?: number;
+    "og:description"?: string;
+    "matrix:image:size"?: number;
+}
+
 export class Util {
     /**
      * downloadFile - This function will take a URL and store the resulting data into
@@ -131,6 +144,11 @@ export class Util {
 
             resolve(url.toString())
         });
+    }
+
+    public static async PreviewUrl(url: string, mxClient: MatrixClient): Promise<IPreviewUrlResponse> {
+        const response = await mxClient.doRequest('GET', `/_matrix/media/v3/preview_url?url=${encodeURIComponent(url)}&ts=1745224860000`);
+        return response as IPreviewUrlResponse;
     }
 
     /**

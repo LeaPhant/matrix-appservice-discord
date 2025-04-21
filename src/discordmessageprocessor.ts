@@ -76,6 +76,15 @@ export class DiscordMessageProcessor {
                 }
                 return null;
             },
+            getDiscordContent: async (url: string) => {
+                try {
+                    const mxcUrl = await this.bot.GetDiscordContent(url);
+                    return mxcUrl;
+                } catch (ex) {
+                    log.warn(`Could not get Discord content at ${url}`, ex);
+                }
+                return null;
+            },
             getUser: async (id: string) => {
                 const member = msg.guild?.members.resolve(id);
                 const mxid = `@_discord_${id}:${this.domain}`;
