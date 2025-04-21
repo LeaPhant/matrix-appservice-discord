@@ -176,7 +176,16 @@ export class DiscordMessageParser {
             }
             if (embed.fields) {
                 for (const field of embed.fields) {
-                    embedContent += `\n**${field.name}**\n`;
+                    embedContent += `\n**`;
+                    embedContent += markdown.toHTML(field.name, {
+                        discordCallback: this.getDiscordParseCallbacks(opts, msg),
+                        discordOnly: true,
+                        escapeHTML: false,
+                        isBot: msg.author ? msg.author.bot : false,
+                        noExtraSpanTags: true,
+                        noHighlightCode: true,
+                    });
+                    embedContent += `**\n`;
                     embedContent += markdown.toHTML(field.value, {
                         discordCallback: this.getDiscordParseCallbacks(opts, msg),
                         discordOnly: true,
@@ -235,7 +244,15 @@ export class DiscordMessageParser {
             }
             if (embed.fields) {
                 for (const field of embed.fields) {
-                    embedContent += `<p><strong>${escapeHtml(field.name)}</strong><br>`;
+                    embedContent += `<p><strong>`;
+                    embedContent += markdown.toHTML(field.name, {
+                        discordCallback: this.getDiscordParseCallbacks(opts, msg),
+                        embed: true,
+                        isBot: msg.author ? msg.author.bot : false,
+                        noExtraSpanTags: true,
+                        noHighlightCode: true,
+                    });
+                    embedContent += `</strong><br>`;
                     embedContent += markdown.toHTML(field.value, {
                         discordCallback: this.getDiscordParseCallbacks(opts, msg),
                         embed: true,
