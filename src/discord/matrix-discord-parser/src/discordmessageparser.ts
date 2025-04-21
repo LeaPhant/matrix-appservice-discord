@@ -164,7 +164,7 @@ export class DiscordMessageParser {
             if (embed.author && embed.author.name) {
                 embedContent += `**${escapeHtml(embed.author.name)}**`;
             }
-            const embedTitle = embed.url ? `[${embed.title}](${embed.url})` : embed.title;
+            const embedTitle = embed.title;
             if (embedTitle) {
                 embedContent += "\n##### " + embedTitle; // h5 is probably best.
             }
@@ -228,16 +228,24 @@ export class DiscordMessageParser {
             }
             let embedContent = content ? "<hr>" : "";
             if (embed.author && embed.author.name) {
+                embedContent += '<p>'
                 if (embed.author.proxyIconURL) {
                     embedContent += `<img data-mx-emoticon height="24" src="\x01proxy\x01${embed.author.proxyIconURL}\x01">&nbsp;`;
                 }
-                embedContent += `<strong>${escapeHtml(embed.author.name)}</strong><br>`;
+                if (embed.author.url) {
+                    embedContent += `<a href="${embed.author.url}">`;
+                }
+                embedContent += escapeHtml(embed.author.name);
+                if (embed.author.url) {
+                    embedContent += '</a>';
+                }
+                embedContent += '</p>';
             }
             const embedTitle = embed.url ?
                 `<a href="${escapeHtml(embed.url)}">${escapeHtml(embed.title)}</a>`
                 : (embed.title ? escapeHtml(embed.title) : undefined);
             if (embedTitle) {
-                embedContent += `<h5>${embedTitle}</h5>`; // h5 is probably best.
+                embedContent += `<strong>${embedTitle}</strong><br>`; // h5 is probably best.
             }
             if (embed.description) {
                 embedContent += "<p>";
@@ -289,7 +297,7 @@ export class DiscordMessageParser {
                 embedContent += `<img src="\x01proxy\x01${embed.image.proxyURL}\x01"><br>`;
             }
             if (embed.footer) {
-                embedContent += '<h6>';
+                embedContent += '<sub>';
                 if (embed.footer.proxyIconURL) {
                     embedContent += `<img data-mx-emoticon height="24" src="\x01proxy\x01${embed.footer.proxyIconURL}\x01">&nbsp;`;
                 }
@@ -300,7 +308,7 @@ export class DiscordMessageParser {
                     noExtraSpanTags: true,
                     noHighlightCode: true,
                 });
-                embedContent += '</h6>';
+                embedContent += '</sub>';
             }
             content += embedContent;
         }
