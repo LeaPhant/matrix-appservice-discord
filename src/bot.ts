@@ -814,7 +814,17 @@ export class DiscordBot {
                 `https://discord.com/stickers/${id}.json` :
                 `https://media.discordapp.net/stickers/${id}.${ext}`;
 
-            const content = (await Util.DownloadFile(url)).buffer;
+            let content = (await Util.DownloadFile(url)).buffer;
+
+            if (type == 'application/json') {
+                try {
+                    content = await Util.ConvertLottieToApng(content);
+                    type = 'image/png';
+                } catch(err) {
+                    log.warn('Unable to convert lottie animation to apng, serving json directly', err);
+                }
+            }
+
             const mxcUrl = await this.bridge.botIntent.underlyingClient.uploadContent(content, type, name);
             dbSticker.StickerId = id;
             dbSticker.Name = name;

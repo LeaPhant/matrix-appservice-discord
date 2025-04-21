@@ -20,6 +20,13 @@ import * as https from "https";
 import { Buffer } from "buffer";
 import { DiscordBridgeConfig } from "./config";
 import { IMatrixEvent } from "./matrixtypes";
+import * as child_process from 'node:child_process';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import * as util from 'node:util';
+import { tmpdir } from 'node:os';
+
+const execFile = util.promisify(child_process.execFile);
 
 const HTTP_OK = 200;
 
@@ -149,6 +156,13 @@ export class Util {
     public static async PreviewUrl(url: string, mxClient: MatrixClient): Promise<IPreviewUrlResponse> {
         const response = await mxClient.doRequest('GET', `/_matrix/media/v3/preview_url?url=${encodeURIComponent(url)}&ts=1745224860000`);
         return response as IPreviewUrlResponse;
+    }
+
+    public static async ConvertLottieToApng(data: Buffer): Promise<Buffer> {
+        const dir = await fs.mkdtemp(path.join(tmpdir(), path.sep));
+        await fs.writeFile(path.resolve(dir, 'sticker.json'), data);
+        await execFile('docker', ['run', '--rm', '-e', 'HEIGHT=320', '-e', 'WIDTH=320',  '-v', `${dir}:/source`, 'edasriyan/lottie-to-apng']);
+        return await fs.readFile(path.resolve(dir, 'sticker.json.apng'));
     }
 
     /**
