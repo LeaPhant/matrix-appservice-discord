@@ -267,6 +267,7 @@ export class DiscordMessageParser {
                                 embedContent += '</tr>';
                             }
                             embedContent += '</table>';
+                            tableOpen = false;
                         }
                         embedContent += '<p>';
                     } else {
@@ -279,7 +280,7 @@ export class DiscordMessageParser {
                         }
                     }
                     if (field.inline) {
-                        embedContent += '<th>';
+                        embedContent += '<td>';
                     }
                     embedContent += `<strong>`;
                     embedContent += markdown.toHTML(field.name, {
@@ -291,7 +292,7 @@ export class DiscordMessageParser {
                     });
                     embedContent += `</strong>`;
                     if (field.inline) {
-                        embedContent += '&nbsp;&nbsp;<br>';
+                        embedContent += '&nbsp;&nbsp;&nbsp;&nbsp;<br>';
                     } else {
                         embedContent += '<br>';
                     }
@@ -305,12 +306,17 @@ export class DiscordMessageParser {
                     if (!field.inline) {
                         embedContent += '</p>';
                     } else {
-                        embedContent += '&nbsp;&nbsp;</th>';
+                        embedContent += '&nbsp;&nbsp;&nbsp;&nbsp;</td>';
                         if (++inlineIndex >= 3) {
                             embedContent += '</tr>';
                             inlineIndex = 0;
                         }
                     }
+                }
+
+                if (tableOpen) {
+                    embedContent += '</table>';
+                    tableOpen = false;
                 }
             }
             if (embed.image) {
