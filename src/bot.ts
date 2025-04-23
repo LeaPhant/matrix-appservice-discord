@@ -40,6 +40,7 @@ import { MetricPeg } from "./metrics";
 import { Lock } from "./structures/lock";
 import { Util } from "./util";
 import { BridgeBlocker, UserActivityState, UserActivityTracker } from "matrix-appservice-bridge";
+import { imageSize } from 'image-size'
 
 const DISCORD_STICKER_TYPE = {
     1: 'image/png',
@@ -800,7 +801,7 @@ export class DiscordBot {
         return urlPreview['og:image'];
     }
 
-    public async GetSticker(name: string, type: string, id: string): Promise<string> {
+    public async GetSticker(name: string, type: string, id: string): Promise<{ url: string, w: number | null, h: number | null}> {
         if (!id.match(/^\d+$/)) {
             throw new Error("Non-numerical ID");
         }
@@ -825,6 +826,13 @@ export class DiscordBot {
                 }
             }
 
+            if (type !== 'application/json') {
+                const dimensions = imageSize(content);
+
+                dbSticker.Width = dimensions.width ?? null;
+                dbSticker.Height = dimensions.height ?? null;
+            }
+
             const mxcUrl = await this.bridge.botIntent.underlyingClient.uploadContent(content, type, name);
             dbSticker.StickerId = id;
             dbSticker.Name = name;
@@ -832,7 +840,7 @@ export class DiscordBot {
             dbSticker.MxcUrl = mxcUrl;
             await this.store.Insert(dbSticker);
         }
-        return dbSticker.MxcUrl;
+        return { url: dbSticker.MxcUrl, w: dbSticker.Width, h: dbSticker.Height }
     }
 
     public async GetRoomIdsFromGuild(
@@ -1267,18 +1275,17 @@ export class DiscordBot {
                 });
                 for (const sticker of this.stickerItemCache[msg.id] ?? []) {
                     const type = DISCORD_STICKER_TYPE[sticker.format_type];
-                    const mxcUrl = await this.GetSticker(sticker.name, type, sticker.id);
+                    const { url, w, h } = await this.GetSticker(sticker.name, type, sticker.id);
                     const info = {
                         mimetype: type,
-                        //despite discord stating so, they are actually not fixed to 320x320
-                        //w: DISCORD_STICKER_WIDTH,
-                        //h: DISCORD_STICKER_HEIGHT
+                        w,
+                        h
                     } as IMatrixMediaInfo;
                     await Util.AsyncForEach(rooms, async (room) => {
                         const eventId = await intent.underlyingClient.sendEvent(room, "m.sticker", {
                             body: sticker.name || "sticker",
                             info,
-                            url: mxcUrl
+                            url
                         });
                         this.lastEventIds[room] = eventId;
                         const evt = new DbEvent();

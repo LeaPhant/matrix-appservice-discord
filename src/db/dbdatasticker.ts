@@ -26,6 +26,8 @@ export class DbSticker implements IDbData {
     public CreatedAt: number;
     public UpdatedAt: number;
     public Result: boolean;
+    public Width: number | null;
+    public Height: number | null;
 
     public async RunQuery(store: DiscordStore, params: ISqlCommandParameters): Promise<void> {
         let query = `
@@ -50,6 +52,8 @@ export class DbSticker implements IDbData {
             this.MxcUrl = row.mxc_url as string;
             this.CreatedAt = row.created_at as number;
             this.UpdatedAt = row.updated_at as number;
+            this.Width = row.width as number | null;
+            this.Height = row.height as number | null;
         }
     }
 
@@ -58,8 +62,8 @@ export class DbSticker implements IDbData {
         this.UpdatedAt = this.CreatedAt;
         await store.db.Run(`
             INSERT INTO sticker
-            (sticker_id,name,type,mxc_url,created_at,updated_at)
-            VALUES ($sticker_id,$type,$type,$mxc_url,$created_at,$updated_at);`, {
+            (sticker_id,name,type,mxc_url,created_at,updated_at,width,height)
+            VALUES ($sticker_id,$type,$type,$mxc_url,$created_at,$updated_at,$width,$height);`, {
             /* eslint-disable @typescript-eslint/naming-convention */
             sticker_id: this.StickerId,
             type: this.Type,
@@ -67,6 +71,8 @@ export class DbSticker implements IDbData {
             mxc_url: this.MxcUrl,
             name: this.Name,
             updated_at: this.UpdatedAt,
+            width: this.Width,
+            height: this.Height
             /* eslint-enable @typescript-eslint/naming-convention */
         });
     }
@@ -80,6 +86,8 @@ export class DbSticker implements IDbData {
             type = $type,
             mxc_url = $mxc_url,
             updated_at = $updated_at
+            width = $width
+            height = $height
             WHERE
             sticker_id = $sticker_id`, {
             /* eslint-disable @typescript-eslint/naming-convention */
@@ -88,6 +96,8 @@ export class DbSticker implements IDbData {
             mxc_url: this.MxcUrl,
             name: this.Name,
             updated_at: this.UpdatedAt,
+            width: this.Width,
+            height: this.Height
             /* eslint-enable @typescript-eslint/naming-convention */
         });
     }
