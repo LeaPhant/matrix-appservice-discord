@@ -813,7 +813,7 @@ export class DiscordBot {
             const ext = type.split('/').pop();
             const url = ext == 'json' ?
                 `https://discord.com/stickers/${id}.json` :
-                `https://media.discordapp.net/stickers/${id}.${ext}`;
+                `https://media.discordapp.net/stickers/${id}.${ext}?size=320`;
 
             let content = (await Util.DownloadFile(url)).buffer;
 
