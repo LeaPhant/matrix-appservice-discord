@@ -1270,8 +1270,9 @@ export class DiscordBot {
                     const mxcUrl = await this.GetSticker(sticker.name, type, sticker.id);
                     const info = {
                         mimetype: type,
-                        w: DISCORD_STICKER_WIDTH,
-                        h: DISCORD_STICKER_HEIGHT
+                        //despite discord stating so, they are actually not fixed to 320x320
+                        //w: DISCORD_STICKER_WIDTH,
+                        //h: DISCORD_STICKER_HEIGHT
                     } as IMatrixMediaInfo;
                     await Util.AsyncForEach(rooms, async (room) => {
                         const eventId = await intent.underlyingClient.sendEvent(room, "m.sticker", {
