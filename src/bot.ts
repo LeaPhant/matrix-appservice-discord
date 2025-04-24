@@ -1401,7 +1401,8 @@ export class DiscordBot {
 
                 const _url = new URL(embed.url);
 
-                if (!['cdn.discordapp.com', 'media.discordapp.net'].includes(_url.hostname)) {
+                if (!['cdn.discordapp.com', 'media.discordapp.net'].includes(_url.hostname)
+                || !_url.pathname.startsWith('/attachments/')) {
                     continue;
                 }
 
