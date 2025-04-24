@@ -40,6 +40,16 @@ export class DbReaction implements IDbDataMany {
                 SELECT *
                 FROM discord_reactions_store
                 WHERE message_id = $message_id AND user_id = $user_id AND emoji = $emoji`;
+        } else if (params.message_id && params.emoji) {
+            query = `
+                SELECT *
+                FROM discord_reactions_store
+                WHERE message_id = $message_id AND emoji = $emoji`;
+        } else if (params.message_id) {
+            query = `
+                SELECT *
+                FROM discord_reactions_store
+                WHERE message_id = $message_id`;
         } else if (params.matrix_id) {
             query = `
                 SELECT *

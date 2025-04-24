@@ -453,6 +453,74 @@ export class DiscordBot {
             }
         });
 
+        client.on('messageReactionRemoveAll', async (message: Discord.Message) => {
+            try {
+                const storeReaction = await this.store.Get(DbReaction, { message_id: message.id });
+
+                if (!storeReaction || !storeReaction.Result) {
+                    log.warn(`No reactions to remove in store.`);
+                    return;
+                }
+
+                while (storeReaction.Next()) {
+                    const storeUser = await this.bot.users.resolve(storeReaction.UserId);
+
+                    if (storeUser == null) {
+                        continue;
+                    }
+
+                    await this.userSync.OnUpdateUser(storeUser, false, message);
+                    const intent = this.GetIntentFromDiscordMember(storeUser);
+
+                    const [event, room] = storeReaction.MatrixId.split(';');
+
+                    await intent.underlyingClient.redactEvent(room, event);
+                    await this.store.Delete(storeReaction);
+                }
+            } catch (err) {
+                log.error("Exception thrown while handling \"messageReactionRemoveAll\" event", err);
+            }
+        });
+
+        client.on('messageReactionRemoveEmoji', async (reaction: Discord.MessageReaction) => {
+            try {
+                let storeEmoji: string;
+
+                const { emoji, message } = reaction;
+
+                if (emoji.id) {
+                    storeEmoji = await this.GetEmoji(emoji.name, emoji.animated, emoji.id) || emoji.name;
+                } else {
+                    storeEmoji = emoji.toString();
+                }
+
+                const storeReaction = await this.store.Get(DbReaction, { message_id: message.id, emoji: storeEmoji });
+
+                if (!storeReaction || !storeReaction.Result) {
+                    log.warn(`No reactions to remove in store.`);
+                    return;
+                }
+
+                while (storeReaction.Next()) {
+                    const storeUser = await this.bot.users.resolve(storeReaction.UserId);
+
+                    if (storeUser == null) {
+                        continue;
+                    }
+
+                    await this.userSync.OnUpdateUser(storeUser, false, message);
+                    const intent = this.GetIntentFromDiscordMember(storeUser);
+
+                    const [event, room] = storeReaction.MatrixId.split(';');
+
+                    await intent.underlyingClient.redactEvent(room, event);
+                    await this.store.Delete(storeReaction);
+                }
+            } catch (err) {
+                log.error("Exception thrown while handling \"messageReactionRemoveEmoji\" event", err);
+            }
+        });
+
         const jsLog = new Log("discord.js");
 
         client.on("userUpdate", async (_, user) => {
