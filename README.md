@@ -14,6 +14,7 @@ This is an optinionated fork of [matrix-appservice-discord](https://github.com/L
 - [x] Prettier replies from Matrix->Discord that fool Discord users into thinking they're the real thing
 
   ![Screenshot of bridged reply](https://boob.li/Z34WuL.png) 
+- [x] Mirror cdn.discordapp.com link content to Matrix channel
 - [x] Properly resolve Matrix->Discord user mentions
 - [x] Remove attachment name from Matrix->Discord bridged media
 - [x] Fix Discord messages with attachments losing their attachment when editing
