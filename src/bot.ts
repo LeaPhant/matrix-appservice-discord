@@ -24,6 +24,7 @@ import { DiscordStore } from "./store";
 import { DbEmoji } from "./db/dbdataemoji";
 import { DbSticker } from "./db/dbdatasticker";
 import { DbEvent } from "./db/dbdataevent";
+import { DbReaction } from "./db/dbdatareaction";
 import { DiscordMessageProcessor } from "./discordmessageprocessor";
 import { MatrixEventProcessor, MatrixEventProcessorOpts, IMatrixEventProcessorResult } from "./matrixeventprocessor";
 import { PresenceHandler } from "./presencehandler";
@@ -361,6 +362,97 @@ export class DiscordBot {
                 log.error("Exception thrown while handling \"message\" event", err);
             }
         });
+
+        client.on('messageReactionAdd', async (reaction: Discord.MessageReaction, user: Discord.User) => {
+            if (reaction.me) {
+                return;
+            }
+
+            try {
+                let storeEmoji: string;
+
+                const { emoji, message } = reaction;
+
+                if (emoji.id) {
+                    storeEmoji = await this.GetEmoji(emoji.name, emoji.animated, emoji.id) || emoji.name;
+                } else {
+                    storeEmoji = emoji.toString();
+                }
+
+                await this.userSync.OnUpdateUser(user, false, message);
+                const intent = this.GetIntentFromDiscordMember(user);
+
+                const storeEvent = await this.store.Get(DbEvent, {discord_id: message.id});
+                if (!storeEvent || !storeEvent.Result) {
+                    log.warn(`Could not add reaction because the event was not in the store.`);
+                    return;
+                }
+
+                while (storeEvent.Next()) {
+                    const [event, room] = storeEvent.MatrixId.split(';');
+
+                    const eventId = await intent.underlyingClient.sendEvent(room, "m.reaction", {
+                        'm.relates_to': {
+                            event_id: event,
+                            key: storeEmoji,
+                            rel_type: 'm.annotation'
+                        },
+                        shortcode: emoji.name ?? storeEmoji
+                    });
+
+                    this.lastEventIds[room] = eventId;
+
+                    const entry = new DbReaction();
+                    entry.MatrixId = `${eventId};${room}`;
+                    entry.MessageId = message.id;
+                    entry.ChannelId = message.channel.id;
+                    entry.UserId = user.id;
+                    entry.Emoji = storeEmoji;
+
+                    await this.store.Insert(entry);
+                }
+            } catch (err) {
+                log.error("Exception thrown while handling \"messageReactionAdd\" event", err);
+            }
+        });
+
+        client.on('messageReactionRemove', async (reaction: Discord.MessageReaction, user: Discord.User) => {
+            if (reaction.me) {
+                return;
+            }
+
+            try {
+                let storeEmoji: string;
+
+                const { emoji, message } = reaction;
+
+                if (emoji.id) {
+                    storeEmoji = await this.GetEmoji(emoji.name, emoji.animated, emoji.id) || emoji.name;
+                } else {
+                    storeEmoji = emoji.toString();
+                }
+
+                const storeReaction = await this.store.Get(DbReaction, { message_id: message.id, user_id: user.id, emoji: storeEmoji });
+
+                if (!storeReaction || !storeReaction.Result) {
+                    log.warn(`Could not remove reaction because the event was not in the store.`);
+                    return;
+                }
+
+                await this.userSync.OnUpdateUser(user, false, message);
+                const intent = this.GetIntentFromDiscordMember(user);
+
+                while (storeReaction.Next()) {
+                    const [event, room] = storeReaction.MatrixId.split(';');
+
+                    await intent.underlyingClient.redactEvent(room, event);
+                    await this.store.Delete(storeReaction);
+                }
+            } catch (err) {
+                log.error("Exception thrown while handling \"messageReactionRemove\" event", err);
+            }
+        });
+
         const jsLog = new Log("discord.js");
 
         client.on("userUpdate", async (_, user) => {

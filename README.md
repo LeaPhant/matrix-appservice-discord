@@ -5,6 +5,7 @@ This is an optinionated fork of [matrix-appservice-discord](https://github.com/L
 ### Features:
 - [x] Change to a monorepo structure for easier maintenance
 - [x] Support Discord->Matrix stickers
+- [x] Support Discord->Matrix reactions
   > Lottie stickers are converted to APNG via [lottie-converter](https://github.com/ed-asriyan/lottie-converter) if podman is available.
 - [x] Native Discord->Matrix replies (via [#878](https://github.com/matrix-org/matrix-appservice-discord/pull/878))
 - [x] Prettier Discord->Matrix Embeds
@@ -25,8 +26,8 @@ This is an optinionated fork of [matrix-appservice-discord](https://github.com/L
 - [ ] Native Matrix->Discord emoji bridging via bot-owned Discord guilds 
   > Probably only suitable for smaller scale deployments depending on the rate limits.
 - [ ] Upgrade to Discord.js 14
-- [ ] Reaction bridging
-  > For Matrix->Discord only one reaction is possible through the Bot user, but better than nothing. 
+- [ ] Matrix->Discord Reaction bridging
+  > Only one reaction is possible through the bot user, but better than nothing. 
 
 > [!NOTE]  
 > Below follows the original `README.md`
