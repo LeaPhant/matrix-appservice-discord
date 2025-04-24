@@ -128,6 +128,7 @@ export class DiscordBot {
     private discordMessageQueue: { [channelId: string]: Promise<void> };
     private forwardedMessageCache: { [messageId: string]: any };
     private stickerItemCache: { [messageId: string]: any };
+    private mirroredLinkCache: { [messageId: string]: string[] };
     private channelLock: Lock<string>;
     private typingTimers: Record<string, NodeJS.Timeout> = {}; // DiscordUser+channel -> Timeout
 
@@ -168,6 +169,7 @@ export class DiscordBot {
         this.sentMessages = [];
         this.discordMessageQueue = {};
         this.forwardedMessageCache = {};
+        this.mirroredLinkCache = {};
         this.stickerItemCache = {};
         this.channelLock = new Lock(this.config.limits.discordSendDelay);
         this.lastEventIds = {};
@@ -1375,93 +1377,144 @@ export class DiscordBot {
                 });
             }
 
-            // Check Attachements
+            const sendMedia: {
+                url: string,
+                name: string | null,
+                width: number | null,
+                height: number | null,
+                size?: number
+            }[] = [];
+
             if (!editEventId) {
-                // on discord you can't edit in images, you can only edit text
-                // so it is safe to only check image upload stuff if we don't have
-                // an edit
-                await Util.AsyncForEach(msg.attachments.array(), async (attachment) => {
-                    const content = await Util.DownloadFile(attachment.url);
-                    const fileMime = content.mimeType || mime.getType(attachment.name || "")
-                        || "application/octet-stream";
-                    const mxcUrl = await intent.underlyingClient.uploadContent(
-                        content.buffer,
-                        fileMime,
-                        attachment.name || "",
-                    );
-                    const type = fileMime.split("/")[0];
-                    let msgtype = {
-                        audio: "m.audio",
-                        image: "m.image",
-                        video: "m.video",
-                    }[type];
-                    if (!msgtype) {
-                        msgtype = "m.file";
-                    }
-                    const info = {
-                        mimetype: fileMime,
-                        size: attachment.size,
-                    } as IMatrixMediaInfo;
-                    if (msgtype === "m.image" || msgtype === "m.video") {
-                        info.w = attachment.width!;
-                        info.h = attachment.height!;
-                    }
-
-                    let spoiler = false;
-
-                    if (attachment?.name?.startsWith('SPOILER_')) {
-                        spoiler = true;
-                    }
-
-                    await Util.AsyncForEach(rooms, async (room) => {
-                        const eventId = await intent.sendEvent(room, {
-                            body: attachment.name || "file",
-                            external_url: attachment.url,
-                            info,
-                            msgtype,
-                            url: mxcUrl,
-                            "page.codeberg.everypizza.msc4193.spoiler": spoiler
-                        });
-                        this.lastEventIds[room] = eventId;
-                        const evt = new DbEvent();
-                        evt.MatrixId = `${eventId};${room}`;
-                        evt.DiscordId = msg.id;
-                        evt.ChannelId = msg.channel.id;
-                        if (msg.guild) {
-                            evt.GuildId = msg.guild.id;
-                        }
-                        await this.store.Insert(evt);
-                        this.userActivity.updateUserActivity(intent.userId);
-                    });
-                });
-                for (const sticker of this.stickerItemCache[msg.id] ?? []) {
-                    const type = DISCORD_STICKER_TYPE[sticker.format_type];
-                    const { url, w, h } = await this.GetSticker(sticker.name, type, sticker.id);
-                    const info = {
-                        mimetype: type,
-                        w,
-                        h
-                    } as IMatrixMediaInfo;
-                    await Util.AsyncForEach(rooms, async (room) => {
-                        const eventId = await intent.underlyingClient.sendEvent(room, "m.sticker", {
-                            body: sticker.name || "sticker",
-                            info,
-                            url
-                        });
-                        this.lastEventIds[room] = eventId;
-                        const evt = new DbEvent();
-                        evt.MatrixId = `${eventId};${room}`;
-                        evt.DiscordId = msg.id;
-                        evt.ChannelId = msg.channel.id;
-                        if (msg.guild) {
-                            evt.GuildId = msg.guild.id;
-                        }
-                        await this.store.Insert(evt);
-                        this.userActivity.updateUserActivity(intent.userId);
-                    });
+                for (const attachment of msg.attachments.values()) {
+                    const { name, url, size, width, height } = attachment;
+                    sendMedia.push({ name, url, size, width, height });
                 }
-                delete this.stickerItemCache[msg.id];
+
+                this.mirroredLinkCache[msg.id] = [];
             }
+
+            for (const embed of msg.embeds) {
+                if (!embed.url) {
+                    continue
+                }
+
+                const _url = new URL(embed.url);
+
+                if (!['cdn.discordapp.com', 'media.discordapp.net'].includes(_url.hostname)) {
+                    continue;
+                }
+
+                const cacheUrl = _url.origin + _url.pathname;
+
+                if (this.mirroredLinkCache[msg.id].includes(cacheUrl)) {
+                    continue;
+                }
+
+                const name = _url.pathname.split('/').pop() ?? 'media';
+                let media;
+
+                switch (embed.type) {
+                case "image":
+                    media = embed.thumbnail;
+                    break;
+                case "video":
+                    media = embed.video;
+                    break;
+                default:
+                    continue;
+                }
+
+                const { url, width, height } = media;
+
+                sendMedia.push({ name, url, width, height });
+                this.mirroredLinkCache[msg.id].push(cacheUrl);
+            }
+
+            // on discord you can't edit in images, you can only edit text
+            // so it is safe to only check image upload stuff if we don't have
+            // an edit
+            await Util.AsyncForEach(sendMedia, async (media) => {
+                const content = await Util.DownloadFile(media.url);
+                const fileMime = content.mimeType || mime.getType(media.name || "")
+                    || "application/octet-stream";
+                const mxcUrl = await intent.underlyingClient.uploadContent(
+                    content.buffer,
+                    fileMime,
+                    media.name || "",
+                );
+                const type = fileMime.split("/")[0];
+                let msgtype = {
+                    audio: "m.audio",
+                    image: "m.image",
+                    video: "m.video",
+                }[type];
+                if (!msgtype) {
+                    msgtype = "m.file";
+                }
+                const info = {
+                    mimetype: fileMime,
+                    size: media.size,
+                } as IMatrixMediaInfo;
+                if (msgtype === "m.image" || msgtype === "m.video") {
+                    info.w = media.width!;
+                    info.h = media.height!;
+                }
+
+                let spoiler = false;
+
+                if (media?.name?.startsWith('SPOILER_')) {
+                    spoiler = true;
+                }
+
+                await Util.AsyncForEach(rooms, async (room) => {
+                    const eventId = await intent.sendEvent(room, {
+                        body: media.name || "file",
+                        external_url: media.url,
+                        info,
+                        msgtype,
+                        url: mxcUrl,
+                        "page.codeberg.everypizza.msc4193.spoiler": spoiler
+                    });
+                    this.lastEventIds[room] = eventId;
+                    const evt = new DbEvent();
+                    evt.MatrixId = `${eventId};${room}`;
+                    evt.DiscordId = msg.id;
+                    evt.ChannelId = msg.channel.id;
+                    if (msg.guild) {
+                        evt.GuildId = msg.guild.id;
+                    }
+                    await this.store.Insert(evt);
+                    this.userActivity.updateUserActivity(intent.userId);
+                });
+            });
+            for (const sticker of this.stickerItemCache[msg.id] ?? []) {
+                const type = DISCORD_STICKER_TYPE[sticker.format_type];
+                const { url, w, h } = await this.GetSticker(sticker.name, type, sticker.id);
+                const info = {
+                    mimetype: type,
+                    w,
+                    h
+                } as IMatrixMediaInfo;
+                await Util.AsyncForEach(rooms, async (room) => {
+                    const eventId = await intent.underlyingClient.sendEvent(room, "m.sticker", {
+                        body: sticker.name || "sticker",
+                        info,
+                        url
+                    });
+                    this.lastEventIds[room] = eventId;
+                    const evt = new DbEvent();
+                    evt.MatrixId = `${eventId};${room}`;
+                    evt.DiscordId = msg.id;
+                    evt.ChannelId = msg.channel.id;
+                    if (msg.guild) {
+                        evt.GuildId = msg.guild.id;
+                    }
+                    await this.store.Insert(evt);
+                    this.userActivity.updateUserActivity(intent.userId);
+                });
+            }
+            delete this.stickerItemCache[msg.id];
             MetricPeg.get.requestOutcome(msg.id, true, "success");
         } catch (err) {
             MetricPeg.get.requestOutcome(msg.id, true, "fail");
@@ -1527,7 +1580,7 @@ export class DiscordBot {
 
     private async OnMessageUpdate(oldMsg: Discord.Message, newMsg: Discord.Message) {
         // Check if an edit was actually made
-        if (oldMsg.content === newMsg.content) {
+        if (oldMsg.content === newMsg.content && newMsg.embeds.length === oldMsg.embeds.length) {
             return;
         }
         log.info(`Got edit event for ${newMsg.id}`);
