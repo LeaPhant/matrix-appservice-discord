@@ -798,7 +798,8 @@ export class DiscordBot {
         if (urlPreview?.['og:image'] == undefined) {
             throw new Error("URL did not return image");
         }
-        return urlPreview['og:image'];
+        const content = (await Util.DownloadFile(url.href)).buffer;
+        return await this.bridge.botIntent.underlyingClient.uploadContent(content);
     }
 
     public async GetSticker(name: string, type: string, id: string): Promise<{ url: string, w: number | null, h: number | null}> {

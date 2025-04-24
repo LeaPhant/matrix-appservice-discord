@@ -425,17 +425,25 @@ export class DiscordMessageParser {
             results = MXC_INSERT_REGEX.exec(content);
         }
         let proxyResults = MXC_PROXY_INSERT_REGEX.exec(content);
+        const replaceTargets: string[] = []
+        const uploadPromises: Promise<string | null>[] = [];
         while (proxyResults !== null) {
             const url = proxyResults[1];
-            let replace = "";
-            const mxcUrl = await opts.callbacks.getDiscordContent(url);
-            if (mxcUrl) {
-                replace = mxcUrl;
-            } else {
-                replace = proxyResults[1];
-            }
-            content = content.replace(proxyResults[0], replace);
+            replaceTargets.push(url);
+            uploadPromises.push(opts.callbacks.getDiscordContent(url))
+            content = content.replace(proxyResults[0], url);
             proxyResults = MXC_PROXY_INSERT_REGEX.exec(content);
+        }
+        const uploadUrls = await Promise.all(uploadPromises);
+        for (let i = 0; i < replaceTargets.length; i++) {
+            const target = replaceTargets[i];
+            const url = uploadUrls[i];
+
+            if (!url) {
+                continue;
+            }
+
+            content = content.replace(target, url);
         }
         return content;
     }
