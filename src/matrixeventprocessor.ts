@@ -577,13 +577,13 @@ export class MatrixEventProcessor {
             if (userOrMember instanceof Discord.User) {
                 embed.setAuthor(
                     userOrMember.username,
-                    userOrMember.avatarURL({ format: 'png' }) || undefined,
+                    userOrMember.avatarURL() || undefined,
                 );
                 return;
             } else if (userOrMember instanceof Discord.GuildMember) {
                 embed.setAuthor(
                     userOrMember.displayName,
-                    userOrMember.user.avatarURL({ format: 'png' }) || undefined,
+                    userOrMember.user.avatarURL() || undefined,
                 );
                 return;
             }
