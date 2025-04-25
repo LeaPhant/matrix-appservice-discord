@@ -1596,7 +1596,7 @@ export class DiscordBot {
 
     private async OnMessageUpdate(oldMsg: Discord.Message, newMsg: Discord.Message) {
         // Check if an edit was actually made
-        if (oldMsg.content === newMsg.content && newMsg.embeds.length === oldMsg.embeds.length) {
+        if (oldMsg.content === newMsg.content && JSON.stringify(newMsg.embeds) === JSON.stringify(oldMsg.embeds)) {
             return;
         }
         log.info(`Got edit event for ${newMsg.id}`);
