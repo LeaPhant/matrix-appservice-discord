@@ -1449,24 +1449,21 @@ export class DiscordBot {
                     mimetype: fileMime,
                     size: media.size,
                 } as IMatrixMediaInfo;
+
                 let mxcUrl;
-                let thumbUrl;
 
                 if (type == 'video') {
-                    ({ mxcUrl, thumbUrl } = await Util.UploadVideo(
+                    const { videoUrl, thumbInfo } = await Util.UploadVideo(
                         intent.underlyingClient,
                         content.buffer,
                         fileMime,
                         media.name || ""
-                    ));
+                    );
 
-                    if (thumbUrl) {
-                        info.thumbnail_url = thumbUrl;
-                        info.thumbnail_info = {
-                            mimetype: 'image/webp',
-                            w: media.width!,
-                            h: media.height!
-                        }
+                    mxcUrl = videoUrl;
+
+                    if (thumbInfo) {
+                        Object.assign(info, thumbInfo);
                     }
                 } else {
                     mxcUrl = await intent.underlyingClient.uploadContent(

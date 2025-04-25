@@ -25,7 +25,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as util from 'node:util';
 import { tmpdir } from 'node:os';
-import * as ffmpeg from 'fluent-ffmpeg';
+import { imageSize } from 'image-size'
 
 const execFile = util.promisify(child_process.execFile);
 
@@ -159,31 +159,48 @@ export class Util {
         return response as IPreviewUrlResponse;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private static async createThumbnailInfo(mxClient: MatrixClient, video: Buffer, format: 'webp' | 'jpeg' | 'png' = 'webp', width = 640): Promise<any> {
+        try {
+            const mimetype = `image/${format}`;
+            const dir = await fs.mkdtemp(path.join(tmpdir(), path.sep));
+            const videoFile = path.resolve(dir, 'video');
+            const thumbFile = path.resolve(dir, `thumb.${format}`);
+
+            await fs.writeFile(videoFile, video);
+            await execFile('ffmpeg', ['-i', videoFile, '-vframes', '1', '-filter:v', `scale=${width}:-1`, thumbFile]);
+
+            const thumbBuf = await fs.readFile(thumbFile);
+            const url = await mxClient.uploadContent(thumbBuf, mimetype, thumbFile);
+
+            const dimensions = imageSize(thumbBuf);
+
+            return {
+                thumbnail_url: url,
+                thumbnail_info: {
+                    mimetype,
+                    size: thumbBuf.byteLength,
+                    width: dimensions.width,
+                    height: dimensions.height,
+                }
+            }
+        } catch(e) {
+            return null;
+        }
+    }
+
     public static async UploadVideo(mxClient: MatrixClient, video: Buffer, mime: string, name: string) {
         const uploadPromises: Promise<string>[] = [];
-        uploadPromises.push(mxClient.uploadContent(video, mime, name));
 
-        const dir = await fs.mkdtemp(path.join(tmpdir(), path.sep));
-        await fs.writeFile(path.resolve(dir, 'video'), video);
+        const videoPromise = mxClient.uploadContent(video, mime, name);
+        uploadPromises.push(videoPromise);
 
-        uploadPromises.push(new Promise(async (resolve, reject) => {
-            ffmpeg(path.resolve(dir, 'video'))
-                .on('error', () => { resolve("") })
-                .on('end', async () => {
-                    const buf = await fs.readFile(path.resolve(dir, 'thumb.webp'));
-                    const url = await mxClient.uploadContent(buf, 'image/webp', 'thumb.webp');
-                    resolve(url);
-                })
-                .screenshot({
-                    timestamps: [0],
-                    filename: 'thumb.webp',
-                    folder: dir
-                });
-        }));
+        const thumbnailPromise = this.createThumbnailInfo(mxClient, video);
+        uploadPromises.push(thumbnailPromise);
 
-        const [mxcUrl, thumbUrl] = await Promise.all(uploadPromises);
+        const [videoUrl, thumbInfo] = await Promise.all(uploadPromises);
 
-        return { mxcUrl, thumbUrl };
+        return { videoUrl, thumbInfo };
     }
 
     public static async ConvertLottieToApng(data: Buffer): Promise<Buffer> {
