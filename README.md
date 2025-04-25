@@ -15,6 +15,7 @@ This is an optinionated fork of [matrix-appservice-discord](https://github.com/L
 
   ![Screenshot of bridged reply](https://boob.li/Z34WuL.png) 
 - [x] Mirror cdn.discordapp.com link content to Matrix channel
+- [x] Generate thumbnails for Discord->Matrix videos 
 - [x] Properly resolve Matrix->Discord user mentions
 - [x] Remove attachment name from Matrix->Discord bridged media
 - [x] Fix Discord messages with attachments losing their attachment when editing
