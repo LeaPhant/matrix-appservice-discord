@@ -64,4 +64,11 @@ export interface IMatrixMediaInfo {
     mimetype: string;
     size: number;
     duration?: number;
+    thumbnail_url?: string;
+    thumbnail_info?: {
+        mimetype: string;
+        size?: number;
+        w?: number;
+        h?: number;
+    }
 }

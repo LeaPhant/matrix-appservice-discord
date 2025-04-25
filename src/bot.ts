@@ -1432,18 +1432,10 @@ export class DiscordBot {
                 this.mirroredLinkCache[msg.id].push(cacheUrl);
             }
 
-            // on discord you can't edit in images, you can only edit text
-            // so it is safe to only check image upload stuff if we don't have
-            // an edit
             await Util.AsyncForEach(sendMedia, async (media) => {
                 const content = await Util.DownloadFile(media.url);
                 const fileMime = content.mimeType || mime.getType(media.name || "")
                     || "application/octet-stream";
-                const mxcUrl = await intent.underlyingClient.uploadContent(
-                    content.buffer,
-                    fileMime,
-                    media.name || "",
-                );
                 const type = fileMime.split("/")[0];
                 let msgtype = {
                     audio: "m.audio",
@@ -1457,6 +1449,32 @@ export class DiscordBot {
                     mimetype: fileMime,
                     size: media.size,
                 } as IMatrixMediaInfo;
+                let mxcUrl;
+                let thumbUrl;
+
+                if (type == 'video') {
+                    ({ mxcUrl, thumbUrl } = await Util.UploadVideo(
+                        intent.underlyingClient,
+                        content.buffer,
+                        fileMime,
+                        media.name || ""
+                    ));
+
+                    if (thumbUrl) {
+                        info.thumbnail_url = thumbUrl;
+                        info.thumbnail_info = {
+                            mimetype: 'image/webp',
+                            w: media.width!,
+                            h: media.height!
+                        }
+                    }
+                } else {
+                    mxcUrl = await intent.underlyingClient.uploadContent(
+                        content.buffer,
+                        fileMime,
+                        media.name || "",
+                    );
+                }
                 if (msgtype === "m.image" || msgtype === "m.video") {
                     info.w = media.width!;
                     info.h = media.height!;

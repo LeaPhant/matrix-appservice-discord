@@ -15,16 +15,17 @@ limitations under the License.
 */
 
 import { Permissions } from "@mx-puppet/better-discord.js";
-import * as http from "http";
-import * as https from "https";
-import { Buffer } from "buffer";
 import { DiscordBridgeConfig } from "./config";
 import { IMatrixEvent } from "./matrixtypes";
+import * as http from "node:http";
+import * as https from "node:https";
+import { Buffer } from "node:buffer";
 import * as child_process from 'node:child_process';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as util from 'node:util';
 import { tmpdir } from 'node:os';
+import * as ffmpeg from 'fluent-ffmpeg';
 
 const execFile = util.promisify(child_process.execFile);
 
@@ -154,8 +155,35 @@ export class Util {
     }
 
     public static async PreviewUrl(url: string, mxClient: MatrixClient): Promise<IPreviewUrlResponse> {
-        const response = await mxClient.doRequest('GET', `/_matrix/media/v3/preview_url?url=${encodeURIComponent(url)}&ts=1745224860000`);
+        const response = await mxClient.doRequest('GET', `/_matrix/media/v3/preview_url?url=${encodeURIComponent(url)}`);
         return response as IPreviewUrlResponse;
+    }
+
+    public static async UploadVideo(mxClient: MatrixClient, video: Buffer, mime: string, name: string) {
+        const uploadPromises: Promise<string>[] = [];
+        uploadPromises.push(mxClient.uploadContent(video, mime, name));
+
+        const dir = await fs.mkdtemp(path.join(tmpdir(), path.sep));
+        await fs.writeFile(path.resolve(dir, 'video'), video);
+
+        uploadPromises.push(new Promise(async (resolve, reject) => {
+            ffmpeg(path.resolve(dir, 'video'))
+                .on('error', () => { resolve("") })
+                .on('end', async () => {
+                    const buf = await fs.readFile(path.resolve(dir, 'thumb.webp'));
+                    const url = await mxClient.uploadContent(buf, 'image/webp', 'thumb.webp');
+                    resolve(url);
+                })
+                .screenshot({
+                    timestamps: [0],
+                    filename: 'thumb.webp',
+                    folder: dir
+                });
+        }));
+
+        const [mxcUrl, thumbUrl] = await Promise.all(uploadPromises);
+
+        return { mxcUrl, thumbUrl };
     }
 
     public static async ConvertLottieToApng(data: Buffer): Promise<Buffer> {
