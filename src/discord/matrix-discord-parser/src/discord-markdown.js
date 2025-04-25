@@ -259,12 +259,12 @@ const rulesDiscord = {
     },
     fakeNitroEmoji: {
         order: markdown.defaultRules.strong.order,
-        match: source => /\[\w+\]\(https:\/\/cdn\.discordapp\.com\/emojis\/(\d+)\.(\w+).+name=(\w+)\)/.exec(source),
+        match: source => /\[([^\]\ ]+)\]\(https:\/\/cdn\.discordapp\.com\/emojis\/(\d+)\.(\w+).+name=[^\]\ ]+\)/.exec(source),
         parse: function(capture) {
             return {
-                animated: capture[2] === "gif",
-                name: capture[3],
-                id: capture[1],
+                animated: capture[3] === "gif",
+                name: capture[1].split('~')[0],
+                id: capture[2],
             };
         },
         html: function(node, output, state) {
