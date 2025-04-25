@@ -122,13 +122,16 @@ const rules = {
     newline: markdown.defaultRules.newline,
     escape: markdown.defaultRules.escape,
     autolink: Object.assign({ }, markdown.defaultRules.autolink, {
+        order: 1,
+        match: source => /^\[([^\]]+)\]\(([^\)]+)\)/.exec(source),
         parse: capture => {
             return {
+                capture: capture[0],
                 content: [{
                     type: 'text',
                     content: capture[1]
                 }],
-                target: capture[1]
+                target: capture[2]
             };
         },
         html: (node, output, state) => {
@@ -136,6 +139,7 @@ const rules = {
         }
     }),
     url: Object.assign({ }, markdown.defaultRules.url, {
+        order: 2,
         parse: capture => {
             return {
                 content: [{
@@ -201,9 +205,10 @@ const discordCallbackDefaults = {
     channel: node => '#' + node.id,
     role: node => '&' + node.id,
     emoji: node => ':' + markdown.sanitizeText(node.name) + ':',
+    fakeNitroEmoji: node => ':' + markdown.sanitizeText(node.name) + ':',
     everyone: () => '@everyone',
     here: () => '@here',
-    spoiler: node => node.content
+    spoiler: node => node.content,
 };
 
 const rulesDiscord = {
@@ -258,10 +263,11 @@ const rulesDiscord = {
         }
     },
     fakeNitroEmoji: {
-        order: markdown.defaultRules.strong.order,
-        match: source => /\[([^\]\ ]+)\]\(https:\/\/cdn\.discordapp\.com\/emojis\/(\d+)\.(\w+).+name=[^\]\ ]+\)/.exec(source),
+        order: 0,
+        match: source => /^\[([^\]\ ]+)\]\(https:\/\/cdn\.discordapp\.com\/emojis\/(\d+)\.(\w+)[^\)]*\)/.exec(source),
         parse: function(capture) {
             return {
+                match: capture[0],
                 animated: capture[3] === "gif",
                 name: capture[1].split('~')[0],
                 id: capture[2],
@@ -269,6 +275,20 @@ const rulesDiscord = {
         },
         html: function(node, output, state) {
             return htmlDiscordTag(state.discordCallbacks.emoji(node), { class: `d-emoji${node.animated ? ' d-emoji-animated' : ''}` }, state);
+        }
+    },
+    fakeNitroSticker: {
+        order: markdown.defaultRules.strong.order,
+        match: source => /\[[\w\ \]+]\(https:\/\/cdn\.discordapp\.com\/stickers\/(\d+)\.(\w+).+name=(\w+)\)/.exec(source),
+        parse: function(capture) {
+            return {
+                animated: capture[2] === "gif",
+                name: capture[3],
+                id: capture[1],
+            };
+        },
+        html: function(node, output, state) {
+            return htmlDiscordTag(state.discordCallbacks.sticker(node), { class: `d-emoji${node.animated ? ' d-emoji-animated' : ''}` }, state);
         }
     },
     discordTimestamp: {
