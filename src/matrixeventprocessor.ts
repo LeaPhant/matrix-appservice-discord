@@ -472,6 +472,13 @@ export class MatrixEventProcessor {
                         sourceBody = `${sourceBody.substring(0,120)}…`;
                     }
 
+                    let autolinkResults = /\[([^\]]+)\]\(([^\)\<\>]+)\)/.exec(sourceBody);
+                    while (autolinkResults !== null) {
+                        const [autolink,name,link] = autolinkResults;
+                        sourceBody = sourceBody.replace(autolink, `[${name}](<${link}>)`);
+                        autolinkResults = /\[([^\]]+)\]\(([^\)\<\>]+)\)/.exec(sourceBody);
+                    }
+
                     const replaceBody: string[] = [];
 
                     for (let part of sourceBody.split(' ')) {
