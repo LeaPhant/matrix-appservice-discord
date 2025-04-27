@@ -45,6 +45,7 @@ function getMessageParserOpts(callbacksSet: any = {}) {
         },
     }, callbacksSet);
     return {
+        forwarded: false,
         callbacks,
     };
 }

@@ -1300,7 +1300,7 @@ export class DiscordBot {
                     return;
                 }
             }
-            const result = await this.discordMsgProcessor.FormatMessage(msg);
+            const result = await this.discordMsgProcessor.FormatMessage(msg, msg.content?.startsWith(FORWARD_HEADER));
 
             if (result.body) {
                 await Util.AsyncForEach(rooms, async (room) => {

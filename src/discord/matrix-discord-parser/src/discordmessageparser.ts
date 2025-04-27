@@ -54,6 +54,7 @@ export interface IDiscordMessageParserCallbacks {
 }
 
 export interface IDiscordMessageParserOpts {
+    forwarded: boolean;
     callbacks: IDiscordMessageParserCallbacks;
 }
 
@@ -119,7 +120,23 @@ export class DiscordMessageParser {
         contentPostmark = await this.InsertChannelPills(opts, contentPostmark, msg, true);
 
         result.body = content;
+
+        if (opts.forwarded) {
+            const newBody: string[] = [];
+
+            for (const [index, line] of result.body.split('\n').entries()) {
+                newBody.push(`> ${line}`);
+            }
+
+            result.body = newBody.join('\n');
+        }
+
         result.formattedBody = contentPostmark;
+
+        if (opts.forwarded) {
+            result.formattedBody = `<blockquote>${result.formattedBody}</blockquote>`;
+        }
+
         result.msgtype = msg.author.bot ? "m.notice" : "m.text";
         return result;
     }

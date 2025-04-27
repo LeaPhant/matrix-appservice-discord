@@ -32,9 +32,10 @@ export class DiscordMessageProcessor {
         this.parser = new DiscordMessageParser();
     }
 
-    public async FormatMessage(msg: Discord.Message): Promise<IDiscordMessageParserResult> {
+    public async FormatMessage(msg: Discord.Message, forwarded = false): Promise<IDiscordMessageParserResult> {
         const opts = {
             callbacks: this.getParserCallbacks(msg),
+            forwarded
         } as IDiscordMessageParserOpts;
         return await this.parser.FormatMessage(opts, msg);
     }
