@@ -956,18 +956,12 @@ export class DiscordBot {
         if (!url.hostname.endsWith('.discordapp.net')) {
             throw new Error("Not a valid Discord content URL");
         }
-
-        const mxClient = this.bridge.botIntent.underlyingClient;
-        const mxcUrl = await Util.GenerateMxcUrl(mxClient);
-
-        Util.DownloadFile(url.href).then(async file => {
-            const { buffer } = file;
-            await Util.UploadContent(buffer, mxClient, mxcUrl);
-        }).catch(() => {
-            log.info('Failed uploading discord content');
-        });
-
-        return mxcUrl;
+        const urlPreview = await Util.PreviewUrl(url.href, this.bridge.botIntent.underlyingClient);
+        if (urlPreview?.['og:image'] == undefined) {
+            throw new Error("URL did not return image");
+        }
+        const content = (await Util.DownloadFile(url.href)).buffer;
+        return await this.bridge.botIntent.underlyingClient.uploadContent(content);
     }
 
     public async GetSticker(name: string, type: string, id: string): Promise<{ url: string, w: number | null, h: number | null}> {
