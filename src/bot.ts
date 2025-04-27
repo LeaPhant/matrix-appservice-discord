@@ -63,7 +63,7 @@ const CACHE_LIFETIME = 90000;
 const INITIAL_FALLOFF_SECONDS = 5;
 const MAX_FALLOFF_SECONDS = 5 * 60; // 5 minutes
 
-const FORWARD_HEADER = `→ Forwarded`;
+const FORWARD_HEADER = `↷ Forwarded`;
 
 // TODO: This is bad. We should be serving the icon from the own homeserver.
 const MATRIX_ICON_URL = "https://matrix.org/_matrix/media/r0/download/matrix.org/mlxoESwIsTbJrfXyAAogrNxA";
