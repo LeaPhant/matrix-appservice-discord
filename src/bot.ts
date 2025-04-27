@@ -956,10 +956,6 @@ export class DiscordBot {
         if (!url.hostname.endsWith('.discordapp.net')) {
             throw new Error("Not a valid Discord content URL");
         }
-        const urlPreview = await Util.PreviewUrl(url.href, this.bridge.botIntent.underlyingClient);
-        if (urlPreview?.['og:image'] == undefined) {
-            throw new Error("URL did not return image");
-        }
         const content = (await Util.DownloadFile(url.href)).buffer;
         return await this.bridge.botIntent.underlyingClient.uploadContent(content);
     }
