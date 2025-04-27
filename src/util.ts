@@ -159,6 +159,17 @@ export class Util {
         return response as IPreviewUrlResponse;
     }
 
+    public static async GenerateMxcUrl(mxClient: MatrixClient): Promise<string> {
+        const response = await mxClient.doRequest('POST', `/_matrix/media/v1/create`);
+        return response.content_uri;
+    }
+
+    public static async UploadContent(data: Buffer, mxClient: MatrixClient, mxcUrl: string): Promise<void> {
+        const url = new URL(mxcUrl);
+        const mediaId = url.pathname.substring(1);
+        await mxClient.doRequest('PUT', `/_matrix/media/v1/create`, `mediaId=${mediaId}&serverName=${url.hostname}`, data);
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private static async createThumbnailInfo(mxClient: MatrixClient, video: Buffer, format: 'webp' | 'jpeg' | 'png' = 'webp', width = 640): Promise<any> {
         try {
