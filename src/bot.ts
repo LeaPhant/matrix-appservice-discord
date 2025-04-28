@@ -1300,7 +1300,19 @@ export class DiscordBot {
                     return;
                 }
             }
-            const result = await this.discordMsgProcessor.FormatMessage(msg, msg.content?.startsWith(FORWARD_HEADER));
+            const result = await this.discordMsgProcessor.FormatMessage(msg);
+
+            if (msg.content?.startsWith(FORWARD_HEADER)) {
+                const newBody: string[] = [];
+
+                for (const line of result.body.split('\n')) {
+                    newBody.push(`> ${line}`);
+                }
+
+                result.body = newBody.join('\n');
+
+                result.formattedBody = `<blockquote>${result.formattedBody}</blockquote>`;
+            }
 
             if (result.body) {
                 await Util.AsyncForEach(rooms, async (room) => {
