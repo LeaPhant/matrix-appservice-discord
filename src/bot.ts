@@ -538,7 +538,55 @@ export class DiscordBot {
         });
         client.on("message", async (msg: Discord.Message) => {
             try {
-                await this.OnIncomingMessage(msg);
+                log.verbose(`Got incoming msg i:${msg.id} c:${msg.channel.id} g:${msg.guild?.id}`);
+                MetricPeg.get.registerRequest(msg.id);
+                await this.channelLock.wait(msg.channel.id);
+
+                if (msg.reference
+                    && msg.content.length == 0
+                    && msg.embeds.length == 0
+                    && msg.attachments.size == 0) {
+                    // probably a forwarded message, merge with cached data from raw websocket
+                    // to work around missing forward support in d.js 12
+
+                    // we are just waiting for another event that should fire around the same time
+                    await Util.DelayedPromise(10);
+
+                    const forwardedMsg = this.forwardedMessageCache[msg.id];
+
+                    if (forwardedMsg) {
+                        msg.content = forwardedMsg.content;
+
+                        for (const data of forwardedMsg.embeds) {
+                            msg.embeds.push(new Discord.MessageEmbed(data));
+                        }
+
+                        for (const data of forwardedMsg.attachments) {
+                            msg.attachments.set(data.id, data);
+                        }
+
+                        if (msg.content.length > 0) {
+                            msg.content = `${FORWARD_HEADER}\n${msg.content}`
+                        } else {
+                            msg.content = FORWARD_HEADER;
+                        }
+
+                        msg.reference = null;
+                    } else if (!this.stickerItemCache[msg.id]) {
+                        return;
+                    }
+                }
+
+                this.clientFactory.bindMetricsToChannel(msg.channel as Discord.TextChannel);
+                this.discordMessageQueue[msg.channel.id] = (async () => {
+                    await (this.discordMessageQueue[msg.channel.id] || Promise.resolve());
+                    try {
+                        await this.OnMessage(msg);
+                    } catch (err) {
+                        MetricPeg.get.requestOutcome(msg.id, true, "fail");
+                        log.error("Caught while handing 'message'", err);
+                    }
+                })();
             } catch (err) {
                 log.error("Exception thrown while handling \"message\" event", err);
             }
@@ -1298,8 +1346,6 @@ export class DiscordBot {
             return;
         }
 
-        // Update presence because sometimes discord misses people.
-        await this.userSync.OnUpdateUser(msg.author, Boolean(msg.webhookID), msg);
         let rooms: string[];
         try {
             rooms = await this.channelSync.GetRoomIdsFromChannel(msg.channel);
@@ -1373,7 +1419,7 @@ export class DiscordBot {
                     }
                     if (relatesTo !== null) sendContent["m.relates_to"] = relatesTo;
 
-                    const trySend = async () => intent.sendEvent(room, sendContent);
+                    const trySend = async () => intent.underlyingClient.sendEvent(room, "m.room.message", sendContent);
                     const afterSend = async (eventId) => {
                         this.lastEventIds[room] = eventId;
                         const evt = new DbEvent();
@@ -1564,62 +1610,6 @@ export class DiscordBot {
         } catch (err) {
             MetricPeg.get.requestOutcome(msg.id, true, "fail");
             log.verbose("Failed to send message into room.", err);
-        }
-    }
-
-    private async OnIncomingMessage(msg: Discord.Message) {
-        try {
-            log.verbose(`Got incoming msg i:${msg.id} c:${msg.channel.id} g:${msg.guild?.id}`);
-            MetricPeg.get.registerRequest(msg.id);
-            await this.channelLock.wait(msg.channel.id);
-
-            if (msg.reference
-                && msg.content.length == 0
-                && msg.embeds.length == 0
-                && msg.attachments.size == 0) {
-                // probably a forwarded message, merge with cached data from raw websocket
-                // to work around missing forward support in d.js 12
-
-                // we are just waiting for another event that should fire around the same time
-                await Util.DelayedPromise(10);
-
-                const forwardedMsg = this.forwardedMessageCache[msg.id];
-
-                if (forwardedMsg) {
-                    msg.content = forwardedMsg.content;
-
-                    for (const data of forwardedMsg.embeds) {
-                        msg.embeds.push(new Discord.MessageEmbed(data));
-                    }
-
-                    for (const data of forwardedMsg.attachments) {
-                        msg.attachments.set(data.id, data);
-                    }
-
-                    if (msg.content.length > 0) {
-                        msg.content = `${FORWARD_HEADER}\n${msg.content}`
-                    } else {
-                        msg.content = FORWARD_HEADER;
-                    }
-
-                    msg.reference = null;
-                } else if (!this.stickerItemCache[msg.id]) {
-                    return;
-                }
-            }
-
-            this.clientFactory.bindMetricsToChannel(msg.channel as Discord.TextChannel);
-            this.discordMessageQueue[msg.channel.id] = (async () => {
-                await (this.discordMessageQueue[msg.channel.id] || Promise.resolve());
-                try {
-                    await this.OnMessage(msg);
-                } catch (err) {
-                    MetricPeg.get.requestOutcome(msg.id, true, "fail");
-                    log.error("Caught while handing 'message'", err);
-                }
-            })();
-        } catch (err) {
-            log.error("Exception thrown while handling \"message\" event", err);
         }
     }
 
