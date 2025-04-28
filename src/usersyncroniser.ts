@@ -245,7 +245,7 @@ export class UserSyncroniser {
             id: discordUser.id + mxidExtra,
             mxUserId: `@_discord_${discordUser.id}${mxidExtra}:${this.config.bridge.domain}`,
         });
-        const displayName = msg?.member?.nickname || Util.ApplyPatternString(this.config.ghosts.usernamePattern, {
+        const displayName = Util.ApplyPatternString(this.config.ghosts.usernamePattern, {
             id: discordUser.id,
             tag: discordUser.discriminator,
             username: discordUser.username,
@@ -274,7 +274,7 @@ export class UserSyncroniser {
         if (oldAvatarUrl !== discordUser.avatarURL()) {
             log.verbose(`User ${discordUser.id} avatarurl should be updated`);
             if (discordUser.avatar) {
-                userState.avatarUrl = discordUser.avatarURL();
+                userState.avatarUrl = discordUser.avatarURL({ format: 'png' });
                 userState.avatarId = discordUser.avatar;
             } else {
                 userState.removeAvatar = true;
@@ -287,7 +287,7 @@ export class UserSyncroniser {
     public async GetUserStateForGuildMember(
         newMember: GuildMember,
     ): Promise<IGuildMemberState> {
-        const name = Util.ApplyPatternString(this.config.ghosts.nickPattern, {
+        const name = newMember.nickname || Util.ApplyPatternString(this.config.ghosts.nickPattern, {
             id: newMember.user.id,
             nick: newMember.displayName,
             tag: newMember.user.discriminator,
