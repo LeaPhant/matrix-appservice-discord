@@ -1565,7 +1565,7 @@ export class DiscordBot {
                 }
 
                 await Util.AsyncForEach(rooms, async (room) => {
-                    const eventId = await intent.sendEvent(room, {
+                    const eventId = await intent.underlyingClient.sendEvent(room, "m.room.message", {
                         body: media.name || "file",
                         external_url: media.url,
                         info,
