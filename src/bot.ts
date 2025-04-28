@@ -319,6 +319,7 @@ export class DiscordBot {
                 }
 
                 const user = await client.users.fetch(data.user_id);
+                await this.userSync.OnUpdateUser(user, false);
                 const intent = this.GetIntentFromDiscordMember(user);
 
                 const storeEvent = await this.store.Get(DbEvent, {discord_id: data.message_id});
@@ -330,14 +331,26 @@ export class DiscordBot {
                 while (storeEvent.Next()) {
                     const [event, room] = storeEvent.MatrixId.split(';');
 
-                    const eventId = await intent.underlyingClient.sendEvent(room, "m.reaction", {
+                    const eventContent = {
                         'm.relates_to': {
                             event_id: event,
                             key: storeEmoji,
                             rel_type: 'm.annotation'
                         },
                         shortcode: emoji.name ?? storeEmoji
-                    });
+                    };
+
+                    const trySend = async () => intent.underlyingClient.sendEvent(room, "m.reaction", eventContent);
+                    let eventId;
+                    try {
+                        eventId = await trySend();
+                    } catch (e) {
+                        if (user) {
+                            await this.userSync.JoinRoom(user, room);
+                        }
+
+                        eventId = await trySend();
+                    }
 
                     this.lastEventIds[room] = eventId;
 
@@ -384,7 +397,17 @@ export class DiscordBot {
                 while (storeReaction.Next()) {
                     const [event, room] = storeReaction.MatrixId.split(';');
 
-                    await intent.underlyingClient.redactEvent(room, event);
+                    const tryRedact = async () => intent.underlyingClient.redactEvent(room, event);
+                    try {
+                        await tryRedact();
+                    } catch (e) {
+                        if (user) {
+                            await this.userSync.JoinRoom(user, room);
+                        }
+
+                        await tryRedact();
+                    }
+
                     await this.store.Delete(storeReaction);
                 }
             } catch (err) {
