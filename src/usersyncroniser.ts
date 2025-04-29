@@ -156,7 +156,6 @@ export class UserSyncroniser {
 
         if (userUpdated) {
             await this.userStore.setRemoteUser(remoteUser);
-            await this.UpdateStateForGuilds(remoteUser);
         }
     }
 
@@ -195,11 +194,11 @@ export class UserSyncroniser {
     }
 
     public async ApplyStateToRoom(memberState: IGuildMemberState, roomId: string, guildId?: string) {
-        log.info(`Applying new room state for ${memberState.mxUserId} to ${roomId}`);
         if (!memberState.displayName) {
             // Nothing to do. Quitting
             return;
         }
+        log.info(`Applying new room state for ${memberState.mxUserId} to ${roomId}`);
         const remoteUser = await this.userStore.getRemoteUser(memberState.id);
         let avatar = "";
         if (remoteUser) {
@@ -274,7 +273,7 @@ export class UserSyncroniser {
         if (oldAvatarUrl !== discordUser.avatarURL()) {
             log.verbose(`User ${discordUser.id} avatarurl should be updated`);
             if (discordUser.avatar) {
-                userState.avatarUrl = discordUser.avatarURL({ format: 'png' });
+                userState.avatarUrl = discordUser.avatarURL();
                 userState.avatarId = discordUser.avatar;
             } else {
                 userState.removeAvatar = true;
@@ -287,7 +286,7 @@ export class UserSyncroniser {
     public async GetUserStateForGuildMember(
         newMember: GuildMember,
     ): Promise<IGuildMemberState> {
-        const name = newMember.nickname || Util.ApplyPatternString(this.config.ghosts.nickPattern, {
+        const name = newMember.displayName || Util.ApplyPatternString(this.config.ghosts.nickPattern, {
             id: newMember.user.id,
             nick: newMember.displayName,
             tag: newMember.user.discriminator,
@@ -306,6 +305,13 @@ export class UserSyncroniser {
             }; }),
             username: newMember.user.tag,
         });
+
+        const remoteUser = await this.userStore.getRemoteUser(newMember.id);
+
+        if (remoteUser?.guildNicks?.get(newMember.guild.id) == name) {
+            guildState.displayName = "";
+        }
+
         return guildState;
     }
 

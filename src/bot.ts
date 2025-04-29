@@ -1347,9 +1347,10 @@ export class DiscordBot {
         }
 
         // Update presence because sometimes discord misses people.
-        /*if (msg.member) {
+        if (msg.member) {
             await this.userSync.OnUpdateGuildMember(msg.member, false, true);
-        }*/
+        }
+        await this.userSync.OnUpdateUser(msg.author, Boolean(msg.webhookID), msg);
 
         let rooms: string[];
         try {
