@@ -17,7 +17,7 @@ limitations under the License.
 
 import { IDiscordMessage, IDiscordMessageEmbed } from "./discordtypes";
 import Discord from "discord.js";
-import * as markdown from "./discord-markdown.js";
+import markdown from "./discord-markdown";
 import * as escapeHtml from "escape-html";
 import { Util } from "./util";
 

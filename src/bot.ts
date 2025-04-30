@@ -18,7 +18,7 @@ limitations under the License.
 
 import * as Discord from "discord.js";
 const { EmbedBuilder } = Discord;
-import { IDiscordMessageParserResult } from "./discord/matrix-discord-parser/src/index";
+import { IDiscordMessageParserResult } from "./parser/index";
 import { DiscordBridgeConfig } from "./config";
 import { DiscordClientFactory } from "./clientfactory";
 import { DiscordStore } from "./store";

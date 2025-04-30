@@ -10,12 +10,10 @@
         "strictNullChecks": true,
         "allowSyntheticDefaultImports": true,
         "incremental": false
-        //"skipLibCheck": true, /* matrix-bot-sdk throws up errors */
     },
     "compileOnSave": true,
     "include": [
         "src/**/*",
-        "src/discord/**/src/*",
         "test/**/*",
         "tools/**/*",
     ]
