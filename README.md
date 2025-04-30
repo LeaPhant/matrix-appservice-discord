@@ -3,6 +3,7 @@
 This is an optinionated fork of [matrix-appservice-discord](https://github.com/LeaPhant/matrix-appservice-discord) I'm personally maintaining for my own bridge, aiming to fix a lot of the shortcomings for smooth interaction between Matrix and Discord users of my community. It's usable by anyone and as of now a drop-in replacement, but I can't give guarantees for stability/security in production as this is just a one person project I work on occasionally.
 
 ### Features:
+- [x] Upgrade to Discord.js 14
 - [x] Change to a monorepo structure for easier maintenance
 - [x] Bridge Discord->Matrix reactions
 - [x] Bridge Discord->Matrix stickers
@@ -27,7 +28,6 @@ This is an optinionated fork of [matrix-appservice-discord](https://github.com/L
 ### Planned:
 - [ ] Native Matrix->Discord emoji bridging via bot-owned Discord guilds 
   > Probably only suitable for smaller scale deployments depending on the rate limits.
-- [ ] Upgrade to Discord.js 14
 - [ ] Matrix->Discord Reaction bridging
   > Only one reaction is possible through the bot user, but better than nothing. 
 

@@ -264,13 +264,13 @@ const rulesDiscord = {
     },
     fakeNitroEmoji: {
         order: 0,
-        match: source => /(?:\[[^\]\ ]+\]\()?https:\/\/cdn\.discordapp\.com\/emojis\/(\d+)\.(\w+)[^\)]*name\=([^&^)]+)[^\)]*(?:\))?/.exec(source),
+        match: source => /(?:\[[^\]\ ]+\]\()?https:\/\/cdn\.discordapp\.com\/emojis\/(\d+)\.(\w+)[^\)]*name\=([\w\d\_]+)[^\)]*(?:\))?/.exec(source),
         parse: function(capture) {
             return {
                 match: capture[0],
                 id: capture[1],
                 animated: capture[2] === "gif",
-                name: capture[3].split('%')[0],
+                name: capture[3],
             };
         },
         html: function(node, output, state) {

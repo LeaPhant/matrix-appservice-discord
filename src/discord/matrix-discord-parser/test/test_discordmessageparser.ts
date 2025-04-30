@@ -18,6 +18,7 @@ import "mocha";
 import { expect } from "chai";
 import { DiscordMessageParser } from "../src/discordmessageparser";
 import { IDiscordRole, IDiscordGuild, IDiscordMessageEmbed, IDiscordMessage } from "../src/discordtypes";
+import Discord from "discord.js";
 
 // we are a test file and thus need those
 /* tslint:disable:no-unused-expression max-file-line-count no-any */
@@ -63,7 +64,7 @@ function getMessage(str: string, bot: boolean = false, mentionEveryone: boolean 
     const author = {
         bot,
     };
-    const msg: IDiscordMessage = {
+    const msg = {
         id: "123456789",
         content: str,
         embeds,
@@ -72,7 +73,7 @@ function getMessage(str: string, bot: boolean = false, mentionEveryone: boolean 
         },
         author,
         guild,
-    };
+    } as Discord.Message;
     return msg;
 }
 

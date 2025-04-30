@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {Channel} from "@mx-puppet/better-discord.js";
+import {Channel} from "discord.js";
 import {MockCollectionManager} from "./collection";
 import {MockMember} from "./member";
 import {MockEmoji} from "./emoji";

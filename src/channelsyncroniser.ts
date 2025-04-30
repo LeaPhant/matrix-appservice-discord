@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as Discord from "@mx-puppet/better-discord.js";
+import * as Discord from "discord.js";
 import { DiscordBot } from "./bot";
 import { Util } from "./util";
 import { DiscordBridgeConfig, DiscordBridgeConfigChannelDeleteOptions } from "./config";
@@ -66,8 +66,8 @@ export class ChannelSyncroniser {
 
     }
 
-    public async OnUpdate(channel: Discord.Channel) {
-        if (channel.type !== "text") {
+    public async OnUpdate(channel: Discord.GuildChannel) {
+        if (channel.type !== Discord.ChannelType.GuildText) {
             return; // Not supported for now
         }
         const channelState = await this.GetChannelUpdateState(channel as Discord.TextChannel);
@@ -82,7 +82,7 @@ export class ChannelSyncroniser {
         log.verbose(`Got guild update for guild ${guild.id}`);
         const channelStates: IChannelState[] = [];
         for (const [_, channel] of guild.channels.cache) {
-            if (channel.type !== "text") {
+            if (channel.type !== Discord.ChannelType.GuildText) {
                 continue; // not supported for now
             }
             try {
@@ -120,7 +120,7 @@ export class ChannelSyncroniser {
     }
 
     public async OnDelete(channel: Discord.Channel) {
-        if (channel.type !== "text") {
+        if (channel.type !== Discord.ChannelType.GuildText) {
             log.info(`Channel ${channel.id} was deleted but isn't a text channel, so ignoring.`);
             return;
         }
@@ -350,7 +350,7 @@ export class ChannelSyncroniser {
 
         await this.roomStore.upsertEntry(entry);
         if (options.ghostsLeave) {
-            for (const member of channel.members.array()) {
+            for (const member of channel.members.values()) {
                 try {
                     const mIntent = this.bot.GetIntentFromDiscordMember(member);
                     await client.leaveRoom(roomId);

@@ -2,14 +2,15 @@
     "compilerOptions": {
         "module": "commonjs",
         "moduleResolution": "node",
-        "target": "es2016",
+        "target": "es2020",
         "noImplicitAny": false,
         "inlineSourceMap": true,
         "outDir": "./build",
         "types": ["mocha", "node"],
         "strictNullChecks": true,
         "allowSyntheticDefaultImports": true,
-        "skipLibCheck": true, /* matrix-bot-sdk throws up errors */
+        "incremental": false
+        //"skipLibCheck": true, /* matrix-bot-sdk throws up errors */
     },
     "compileOnSave": true,
     "include": [

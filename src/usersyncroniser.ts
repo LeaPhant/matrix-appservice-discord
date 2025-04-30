@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { User, GuildMember, Message } from "@mx-puppet/better-discord.js";
+import { User, GuildMember, Message } from "discord.js";
 import { DiscordBot } from "./bot";
 import { Util } from "./util";
 import { DiscordBridgeConfig } from "./config";
@@ -248,6 +248,7 @@ export class UserSyncroniser {
             id: discordUser.id,
             tag: discordUser.discriminator,
             username: discordUser.username,
+            displayname: discordUser.displayName
         });
         // Determine if the user exists.
         const remoteId = discordUser.id + mxidExtra;

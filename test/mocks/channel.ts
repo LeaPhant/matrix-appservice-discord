@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {Permissions, PermissionResolvable, TextChannel} from "@mx-puppet/better-discord.js";
+import {PermissionFlagsBits, TextChannel} from "discord.js";
 import {MockMember} from "./member";
 import {MockCollection} from "./collection";
 import { MockGuild } from "./guild";
@@ -38,7 +38,7 @@ export class MockChannel {
     }
 
     public permissionsFor(member: MockMember) {
-        return new Permissions(Permissions.FLAGS.MANAGE_WEBHOOKS as PermissionResolvable);
+        return PermissionFlagsBits.ManageWebhooks;
     }
 }
 

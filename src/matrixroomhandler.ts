@@ -17,7 +17,7 @@ limitations under the License.
 import { DiscordBot, IThirdPartyLookup } from "./bot";
 import { DiscordBridgeConfig } from "./config";
 
-import * as Discord from "@mx-puppet/better-discord.js";
+import * as Discord from "discord.js";
 import { Util } from "./util";
 import { Log } from "./log";
 const log = new Log("MatrixRoomHandler");
@@ -111,7 +111,7 @@ export class MatrixRoomHandler {
         // Join a whole bunch of users.
         // We delay the joins to give some implementations a chance to breathe
         let delay = this.config.limits.roomGhostJoinDelay;
-        for (const member of (channel as Discord.TextChannel).members.array()) {
+        for (const member of (channel as Discord.TextChannel).members.values()) {
             if (member.id === this.discord.GetBotId()) {
                 continue;
             }

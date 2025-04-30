@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { User, Presence } from "@mx-puppet/better-discord.js";
+import { User, Presence } from "discord.js";
 import { DiscordBot } from "./bot";
 import { Log } from "./log";
 import { MetricPeg } from "./metrics";
@@ -63,23 +63,23 @@ export class PresenceHandler {
     }
 
     public EnqueueUser(presence: Presence) {
-        if (presence.userID === this.bot.GetBotId()) {
+        if (presence.userId === this.bot.GetBotId()) {
             return;
         }
 
         // Delete stale presence
-        const indexOfPresence = this.presenceQueue.findIndex((u) => u.userID === presence.userID);
+        const indexOfPresence = this.presenceQueue.findIndex((u) => u.userId === presence.userId);
         if (indexOfPresence !== -1) {
             this.presenceQueue.splice(indexOfPresence, 1);
         }
-        log.verbose(`Adding ${presence.userID} (${presence.user?.username}) to the presence queue`);
+        log.verbose(`Adding ${presence.userId} (${presence.user?.username}) to the presence queue`);
         this.presenceQueue.push(presence);
         MetricPeg.get.setPresenceCount(this.presenceQueue.length);
     }
 
     public DequeueUser(user: User) {
         const index = this.presenceQueue.findIndex((item) => {
-            return user.id === item.userID;
+            return user.id === item.userId;
         });
         if (index !== -1) {
             this.presenceQueue.splice(index, 1);
@@ -107,7 +107,7 @@ export class PresenceHandler {
             if (!proccessed) {
                 this.presenceQueue.push(presence);
             } else {
-                log.verbose(`Dropping ${presence.userID} from the presence queue.`);
+                log.verbose(`Dropping ${presence.userId} from the presence queue.`);
                 MetricPeg.get.setPresenceCount(this.presenceQueue.length);
             }
         }
@@ -119,7 +119,7 @@ export class PresenceHandler {
         // How do we show multiple activities?
         const activity = presence.activities[0];
         if (activity) {
-            const type = activity.type[0] + activity.type.substring(1).toLowerCase(); // STREAMING -> Streaming;
+            const type = activity.type[0] + activity.type.toString().substring(1).toLowerCase(); // STREAMING -> Streaming;
             status.StatusMsg = `${type} ${activity.name}`;
             if (activity.url) {
                 status.StatusMsg += ` | ${activity.url}`;

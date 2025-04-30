@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as Discord from "@mx-puppet/better-discord.js";
+import * as Discord from "discord.js";
 import { DbRoomStore, RemoteStoreRoom, MatrixStoreRoom } from "./db/roomstore";
 import { ChannelSyncroniser } from "./channelsyncroniser";
 import { Log } from "./log";
@@ -130,7 +130,7 @@ export class Provisioner {
         }
 
         const perms = channel.permissionsFor(member);
-        if (!perms || !perms.has(Discord.Permissions.FLAGS.MANAGE_WEBHOOKS as Discord.PermissionResolvable)) {
+        if (!perms || !perms.has(Discord.PermissionFlagsBits.ManageWebhooks)) {
             // Missing permissions, so just reject it
             throw new Error("You do not have permission to manage webhooks in this channel");
         }

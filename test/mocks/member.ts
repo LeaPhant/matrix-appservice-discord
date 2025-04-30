@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as Discord from "@mx-puppet/better-discord.js";
+import * as Discord from "discord.js";
 import {MockCollectionManager} from "./collection";
 import {MockUser} from "./user";
 import {MockRole} from "./role";
@@ -30,11 +30,11 @@ export class MockMember {
     public roles = new MockCollectionManager<string, MockRole>();
     constructor(id: string, username: string, public guild: any = null, public displayName: string = username) {
         this.id = id;
-        this.presence = new Discord.Presence({} as any, {
+        this.presence = {
             user: {
-                id: this.id,
-            },
-        });
+                id: this.id
+            }
+        } as Discord.Presence;
         this.user = new MockUser(this.id, username);
         this.nickname = displayName;
     }

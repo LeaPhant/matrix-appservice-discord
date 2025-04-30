@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as Discord from "@mx-puppet/better-discord.js";
+import * as Discord from "discord.js";
 import { DiscordBot } from "./bot";
 import { Util, ICommandActions, ICommandParameters, CommandPermissonCheck } from "./util";
 import { Log } from "./log";
@@ -31,11 +31,11 @@ export class DiscordCommandHandler {
     public async Process(msg: Discord.Message) {
         const chan = msg.channel as Discord.TextChannel;
         if (!chan.guild) {
-            await msg.channel.send("**ERROR:** only available for guild channels");
+            await chan.send("**ERROR:** only available for guild channels");
             return;
         }
         if (!msg.member) {
-            await msg.channel.send("**ERROR:** could not determine message member");
+            await chan.send("**ERROR:** could not determine message member");
             return;
         }
 
@@ -111,11 +111,11 @@ export class DiscordCommandHandler {
             if (!Array.isArray(permission)) {
                 permission = [permission];
             }
-            return permission.every((p) => discordMember.hasPermission(p as Discord.PermissionResolvable));
+            return permission.every((p) => discordMember.permissions.has(p as Discord.PermissionResolvable));
         };
 
         const reply = await Util.ParseCommand("!matrix", msg.content, actions, parameters, permissionCheck);
-        await msg.channel.send(reply);
+        await chan.send(reply);
     }
 
     private ModerationActionGenerator(discordChannel: Discord.TextChannel, funcKey: "kick"|"ban"|"unban") {

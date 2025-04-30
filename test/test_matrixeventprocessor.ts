@@ -16,7 +16,7 @@ limitations under the License.
 
 import { expect } from "chai";
 import * as Proxyquire from "proxyquire";
-import * as Discord from "@mx-puppet/better-discord.js";
+import * as Discord from "discord.js";
 import { MockMember } from "./mocks/member";
 import { MatrixEventProcessor, MatrixEventProcessorOpts } from "../src/matrixeventprocessor";
 import { DiscordBridgeConfig } from "../src/config";
@@ -198,9 +198,9 @@ function createMatrixEventProcessor(storeMockResults = 0, configBridge = new Dis
         GetChannelFromRoomId: async (roomId) => {
             return new MockChannel("123456");
         },
-        GetDiscordUserOrMember: async (s) => {
+        /*GetDiscordUserOrMember: async (s) => {
             return new Discord.User({ } as any, { username: "Someuser" });
-        },
+        },*/
         HandleMatrixKickBan: () => {
             KICKBAN_HANDLED = true;
         },
@@ -266,7 +266,7 @@ describe("MatrixEventProcessor", () => {
             processor.HandleAttachment = async () => "";
             processor.EventToEmbed = async (evt, chan) => {
                 return {
-                    messageEmbed: new Discord.MessageEmbed(),
+                    messageEmbed: new Discord.EmbedBuilder().data,
                 };
             };
             const room = { data: {
@@ -299,7 +299,7 @@ describe("MatrixEventProcessor", () => {
             processor.HandleAttachment = async () => "";
             processor.EventToEmbed = async (evt, chan) => {
                 return {
-                    messageEmbed: new Discord.MessageEmbed(),
+                    messageEmbed: new Discord.EmbedBuilder().data,
                 };
             };
             const room = { data: {
@@ -492,7 +492,7 @@ describe("MatrixEventProcessor", () => {
             } as IMatrixEvent, mockChannel as any);
             const author = embeds.messageEmbed.author;
             expect(author!.name).to.equal("Test User");
-            expect(author!.iconURL).to.equal("https://localhost/avatarurl");
+            expect(author!.icon_url).to.equal("https://localhost/avatarurl");
             expect(author!.url).to.equal("https://matrix.to/#/@test:localhost");
         });
 
@@ -506,7 +506,7 @@ describe("MatrixEventProcessor", () => {
             } as IMatrixEvent, mockChannel as any);
             const author = embeds.messageEmbed.author;
             expect(author!.name).to.equal("Test User");
-            expect(author!.iconURL).to.equal("https://localhost/avatarurl");
+            expect(author!.icon_url).to.equal("https://localhost/avatarurl");
             expect(author!.url).to.equal("https://matrix.to/#/@test:localhost");
         });
 
@@ -520,7 +520,7 @@ describe("MatrixEventProcessor", () => {
             } as IMatrixEvent, mockChannel as any);
             const author = embeds.messageEmbed.author;
             expect(author!.name).to.equal("@test_nonexistant:localhost");
-            expect(author!.iconURL).to.be.undefined;
+            expect(author!.icon_url).to.be.undefined;
             expect(author!.url).to.equal("https://matrix.to/#/@test_nonexistant:localhost");
         });
 
@@ -570,7 +570,7 @@ describe("MatrixEventProcessor", () => {
             } as IMatrixEvent, mockChannel as any);
             const author = embeds.messageEmbed.author;
             expect(author!.name).to.equal("Test User");
-            expect(author!.iconURL).to.equal("https://localhost/avatarurl");
+            expect(author!.icon_url).to.equal("https://localhost/avatarurl");
             expect(author!.url).to.equal("https://matrix.to/#/@test:localhost");
         });
 
@@ -658,7 +658,7 @@ describe("MatrixEventProcessor", () => {
                     msgtype: "m.video",
                     url: "mxc://localhost/200",
                 },
-            } as IMatrixEvent, realBridge.botIntent.underlyingClient)) as Discord.FileOptions;
+            } as IMatrixEvent, realBridge.botIntent.underlyingClient)) as Discord.AttachmentPayload;
             expect(attachment.name).to.eq("filename.webm");
             if (attachment.attachment instanceof Buffer) {
                 expect(attachment.attachment.length).to.eq(SMALL_FILE);
@@ -704,7 +704,7 @@ describe("MatrixEventProcessor", () => {
                     msgtype: "m.video",
                     url: "mxc://localhost/200",
                 },
-            } as IMatrixEvent, realBridge.botIntent.underlyingClient)) as Discord.FileOptions;
+            } as IMatrixEvent, realBridge.botIntent.underlyingClient)) as Discord.AttachmentPayload;
             expect(attachment.name).to.eq("filename.webm");
             if (attachment.attachment instanceof Buffer) {
                 expect(attachment.attachment.length).to.eq(SMALL_FILE);
@@ -740,7 +740,7 @@ describe("MatrixEventProcessor", () => {
                     url: "mxc://localhost/8000000",
                 },
             } as IMatrixEvent, realBridge.botIntent.underlyingClient, true);
-            expect((ret as Discord.MessageEmbed).image!.url).equals("https://localhost/8000000");
+            expect((ret as Discord.APIEmbed).image!.url).equals("https://localhost/8000000");
         });
         it("Should handle stickers.", async () => {
             const {processor, realBridge} =  createMatrixEventProcessor();
@@ -754,7 +754,7 @@ describe("MatrixEventProcessor", () => {
                 },
                 sender: "@test:localhost",
                 type: "m.sticker",
-            } as IMatrixEvent, realBridge.botIntent.underlyingClient)) as Discord.FileOptions;
+            } as IMatrixEvent, realBridge.botIntent.underlyingClient)) as Discord.AttachmentPayload;
             expect(attachment.name).to.eq("Bunnies.png");
         });
     });

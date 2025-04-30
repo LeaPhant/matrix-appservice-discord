@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as Discord from "@mx-puppet/better-discord.js";
+import Discord, { EmbedBuilder } from "discord.js";
 import { DiscordBot } from "./bot";
 import { DiscordBridgeConfig } from "./config";
 import { Util, wrapError, isUrl } from "./util";
@@ -56,9 +56,9 @@ export class MatrixEventProcessorOpts {
 }
 
 export interface IMatrixEventProcessorResult {
-    messageEmbed: Discord.MessageEmbed;
-    replyEmbed?: Discord.MessageEmbed;
-    imageEmbed?: Discord.MessageEmbed;
+    messageEmbed: Discord.APIEmbed;
+    replyEmbed?: Discord.APIEmbed;
+    imageEmbed?: Discord.APIEmbed;
 }
 
 export class MatrixEventProcessor {
@@ -199,7 +199,7 @@ export class MatrixEventProcessor {
         }
 
         const embedSet = await this.EventToEmbed(event, chan);
-        const opts: Discord.MessageOptions = {};
+        const opts: Discord.MessageCreateOptions = {};
         const file = await this.HandleAttachment(event, mxClient, roomLookup.canSendEmbeds);
         // There is a file url, replace description as Matrix messages can't have both a file and text
         if (typeof(file) === "string" && file.length > 0) {
@@ -210,8 +210,8 @@ export class MatrixEventProcessor {
             }
 
             embedSet.messageEmbed.description = fileUrl;
-        } else if ((file as Discord.FileOptions).name && (file as Discord.FileOptions).attachment) {
-            const discordFile = file as Discord.FileOptions;
+        } else if ((file as Discord.AttachmentPayload).name && (file as Discord.AttachmentPayload).attachment) {
+            const discordFile = file as Discord.AttachmentPayload;
 
             if (event.content && event.content["page.codeberg.everypizza.msc4193.spoiler"]) {
                 discordFile.name = `SPOILER_${discordFile.name}`;
@@ -219,12 +219,12 @@ export class MatrixEventProcessor {
 
             opts.files = [discordFile];
         } else {
-            embedSet.imageEmbed = file as Discord.MessageEmbed;
+            embedSet.imageEmbed = file as Discord.APIEmbed;
         }
 
         // Throws an `Unstable.ForeignNetworkError` when sending the message fails.
         if (editEventId) {
-            await this.discord.edit(embedSet, opts, roomLookup, event, editEventId);
+            await this.discord.edit(embedSet, opts as Discord.MessageEditOptions, roomLookup, event, editEventId);
         } else {
             await this.discord.send(embedSet, opts, roomLookup, event);
         }
@@ -321,7 +321,7 @@ export class MatrixEventProcessor {
             body = await this.matrixMsgProcessor.FormatMessage(content as IMatrixMessage, channel.guild, params);
         }
 
-        const messageEmbed = new Discord.MessageEmbed();
+        const messageEmbed = new EmbedBuilder({ description: '' });
         await this.SetEmbedAuthor(messageEmbed, event.sender, profile);
         let replyEmbed = getReply ? (await this.GetEmbedForReply(event, channel)) : undefined;
         if (typeof replyEmbed == "string") {
@@ -339,7 +339,7 @@ export class MatrixEventProcessor {
             for (let i = 0; i < replyEmbed.fields.length; i++) {
                 const f = replyEmbed.fields[i];
                 if (f.name === "ping") {
-                    messageEmbed.description += `\n(${f.value})`;
+                    messageEmbed.data.description += `\n(${f.value})`;
                     replyEmbed.fields.splice(i, 1);
                     break;
                 }
@@ -349,7 +349,7 @@ export class MatrixEventProcessor {
         messageEmbed.setDescription(body);
 
         return {
-            messageEmbed,
+            messageEmbed: messageEmbed.data,
             replyEmbed,
         };
     }
@@ -358,7 +358,7 @@ export class MatrixEventProcessor {
         event: IMatrixEvent,
         mxClient: MatrixClient,
         sendEmbeds: boolean = false,
-    ): Promise<string|Discord.FileOptions|Discord.MessageEmbed> {
+    ): Promise<string|Discord.AttachmentPayload|Discord.APIEmbed> {
         if (!this.HasAttachment(event)) {
             return "";
         }
@@ -388,12 +388,13 @@ export class MatrixEventProcessor {
                 return {
                     attachment,
                     name,
-                } as Discord.FileOptions;
+                } as Discord.AttachmentPayload;
             }
         }
         if (sendEmbeds && event.content.info.mimetype.split("/")[0] === "image") {
-            return new Discord.MessageEmbed()
-                .setImage(url);
+            return new EmbedBuilder()
+                .setImage(url)
+                .data;
         }
         return `[${name}](${await Util.MxcToHttpUnauthenticated(event.content.url, this.bridge.botClient)})`;
     }
@@ -401,7 +402,7 @@ export class MatrixEventProcessor {
     public async GetEmbedForReply(
         event: IMatrixEvent,
         channel: Discord.TextChannel,
-    ): Promise<Discord.MessageEmbed|string|undefined> {
+    ): Promise<Discord.APIEmbed|string|undefined> {
         if (!event.content) {
             event.content = {};
         }
@@ -422,13 +423,10 @@ export class MatrixEventProcessor {
                 throw Error("No content could be found");
             }
 
-            const replyEmbed = (await this.EventToEmbed(sourceEvent, channel, true)).messageEmbed;
-
             let uid: string | undefined;
             // if we reply to a discord member, ping them!
             if (this.bridge.isNamespacedUser(sourceEvent.sender)) {
                 uid = this.bridge.getSuffixForUserId(sourceEvent.sender);
-                replyEmbed.addField("ping", `<@${uid}>`);
             }
 
             let replyBody: string = "";
@@ -446,8 +444,6 @@ export class MatrixEventProcessor {
                     replyBody = `https://discord.com/channels/${guildId}/${channelId}/${discordId}`;
                 }
             }
-
-            replyEmbed.setTimestamp(new Date(sourceEvent.origin_server_ts!));
 
             if (this.HasAttachment(sourceEvent)) {
                 const url = await this.bridge.botClient.mxcToHttp(sourceEvent.content!.url!);
@@ -500,10 +496,10 @@ export class MatrixEventProcessor {
             log.warn("Failed to handle reply, showing a unknown embed:", ex);
         }
         // For some reason we failed to get the event, so using fallback.
-        const embed = new Discord.MessageEmbed();
+        const embed = new EmbedBuilder();
         embed.setDescription("Reply with unknown content");
-        embed.setAuthor("Unknown");
-        return embed;
+        embed.setAuthor({ name: "Unknown" });
+        return embed.data;
     }
 
     private async GetUserProfileForRoom(roomId: string, userId: string) {
@@ -571,7 +567,7 @@ export class MatrixEventProcessor {
         return hasAttachment;
     }
 
-    private async SetEmbedAuthor(embed: Discord.MessageEmbed, sender: string, profile?: {
+    private async SetEmbedAuthor(embed: Discord.EmbedBuilder, sender: string, profile?: {
         displayname: string,
         avatar_url: string|undefined }) {
         let displayName = sender;
@@ -582,16 +578,16 @@ export class MatrixEventProcessor {
             const localpart = Util.ParseMxid(sender).localpart;
             const userOrMember = await this.discord.GetDiscordUserOrMember(localpart.substring("_discord".length));
             if (userOrMember instanceof Discord.User) {
-                embed.setAuthor(
-                    userOrMember.username,
-                    userOrMember.avatarURL() || undefined,
-                );
+                embed.setAuthor({
+                    name: userOrMember.username,
+                    iconURL: userOrMember.avatarURL() || undefined,
+                });
                 return;
             } else if (userOrMember instanceof Discord.GuildMember) {
-                embed.setAuthor(
-                    userOrMember.displayName,
-                    userOrMember.user.avatarURL() || undefined,
-                );
+                embed.setAuthor({
+                    name: userOrMember.displayName,
+                    iconURL: userOrMember.user.avatarURL() || undefined,
+                });
                 return;
             }
             // Let it fall through.
@@ -614,11 +610,11 @@ export class MatrixEventProcessor {
                 );
             }
         }
-        embed.setAuthor(
-            displayName.substring(0, MAX_NAME_LENGTH),
-            avatarUrl,
-            `https://matrix.to/#/${sender}`,
-        );
+        embed.setAuthor({
+            name: displayName.substring(0, MAX_NAME_LENGTH),
+            iconURL: avatarUrl,
+            url: `https://matrix.to/#/${sender}`,
+        });
     }
 
     private GetFilenameForMediaEvent(content: IMatrixEventContent): string {
