@@ -1,7 +1,7 @@
-const markdown = require('simple-markdown');
-const highlight = require('highlight.js');
-const emoji = require("node-emoji");
-const { fromUnixTime, format, formatDistanceToNow } = require('date-fns');
+import * as markdown from 'simple-markdown';
+import * as highlight from 'highlight.js';
+import * as emoji from 'node-emoji';
+import { fromUnixTime, format, formatDistanceToNow } from 'date-fns';
 
 function htmlTag(tagName, content, attributes, isClosed = true, state = { }) {
     if (typeof isClosed === 'object') {
@@ -13,7 +13,7 @@ function htmlTag(tagName, content, attributes, isClosed = true, state = { }) {
         attributes = { };
 
     if (attributes.class)
-        attributes.class = attributes.class.split(' ').map(cl => state.cssModuleNames[cl] || cl).join(' ');
+        attributes.class = attributes.class.split(' ').map(cl => state['cssModuleNames'][cl] || cl).join(' ');
 
     let attributeString = '';
     for (let attr in attributes) {
@@ -28,7 +28,6 @@ function htmlTag(tagName, content, attributes, isClosed = true, state = { }) {
         return unclosedTag + content + `</${tagName}>`;
     return unclosedTag;
 }
-markdown.htmlTag = htmlTag;
 
 function htmlDiscordTag(content, attributes, state) {
     if (state.noExtraSpanTags)
@@ -101,7 +100,7 @@ const rules = {
         },
         html: (node, output, state) => {
             let code;
-            const classes = [];
+            const classes: string[] = [];
             if (node.lang && highlight.getLanguage(node.lang) && !state.noHighlightCode) {
                 code = highlight.highlight(node.lang, node.content, true); // Discord seems to set ignoreIllegals: true
                 if (state.cssModuleNames)
@@ -165,7 +164,7 @@ const rules = {
         match: markdown.inlineRegex(/^~~([\s\S]+?)~~(?!_)/),
     }),
     inlineCode: Object.assign({ }, markdown.defaultRules.inlineCode, {
-        match: source => markdown.defaultRules.inlineCode.match.regex.exec(source),
+        match: source => markdown.defaultRules.inlineCode.match.regex!.exec(source),
         html: function(node, output, state) {
             return htmlTag('code', markdown.sanitizeText(node.content), null, state);
         }
@@ -195,7 +194,7 @@ const rules = {
             };
         },
         html: function(node, output, state) {
-            return htmlDiscordTag('span', output(node.content, state), { class: 'd-spoiler' }, state);
+            return htmlDiscordTag('span', output(node.content, state), { class: 'd-spoiler' });
         }
     }
 };
@@ -376,11 +375,11 @@ const rulesEmbed = Object.assign({ }, rules, {
 });
 
 const parser = markdown.parserFor(rules);
-const htmlOutput = markdown.htmlFor(markdown.ruleOutput(rules, 'html'));
+const htmlOutput = markdown.outputFor(rules, 'html');
 const parserDiscord = markdown.parserFor(rulesDiscordOnly);
-const htmlOutputDiscord = markdown.htmlFor(markdown.ruleOutput(rulesDiscordOnly, 'html'));
+const htmlOutputDiscord = markdown.outputFor(rulesDiscordOnly, 'html');
 const parserEmbed = markdown.parserFor(rulesEmbed);
-const htmlOutputEmbed = markdown.htmlFor(markdown.ruleOutput(rulesEmbed, 'html'));
+const htmlOutputEmbed = markdown.outputFor(rulesEmbed, 'html');
 
 /**
  * Parse markdown and return the HTML output
@@ -428,7 +427,7 @@ function toHTML(source, ops) {
 
     return _htmlOutput(_parser(source, state), state);
 }
-module.exports = {
+export default {
     parser: source => parser(source, { inline: true }),
     htmlOutput,
     toHTML
