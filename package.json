@@ -5,7 +5,7 @@
   "main": "discordas.js",
   "engines": {
     "npm": "please-use-yarn",
-    "node": ">=18 <=20"
+    "node": ">=22"
   },
   "scripts": {
     "test": "mocha -r ts-node/register test/config.ts test/test_*.ts test/**/test_*.ts",
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Half-Shot/matrix-appservice-discord.git"
+    "url": "git+https://github.com/ElwinghL/matrix-appservice-discord.git"
   },
   "keywords": [
     "matrix",
@@ -36,13 +36,13 @@
   "author": "Half-Shot",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/Half-Shot/matrix-appservice-discord/issues"
+    "url": "https://github.com/ElwinghL/matrix-appservice-discord/issues"
   },
-  "homepage": "https://github.com/Half-Shot/matrix-appservice-discord#readme",
+  "homepage": "https://github.com/ElwinghL/matrix-appservice-discord#readme",
   "dependencies": {
     "@discordjs/rest": "^2.5.0",
     "@discordjs/ws": "^2.0.2",
-    "better-sqlite3": "^8.6.0",
+    "better-sqlite3": "^12.2.0",
     "command-line-args": "^5.1.1",
     "command-line-usage": "^6.1.0",
     "date-fns": "^4.1.0",

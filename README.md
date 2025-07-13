@@ -14,24 +14,24 @@ This is an optinionated fork of [matrix-appservice-discord](https://github.com/L
   ![Screenshot of bridged Discord embed on Matrix](https://boob.li/E6QzPs.png)
 - [x] Prettier replies from Matrix->Discord that fool Discord users into thinking they're the real thing
 
-  ![Screenshot of bridged reply](https://boob.li/Z34WuL.png) 
+  ![Screenshot of bridged reply](https://boob.li/Z34WuL.png)
 - [x] Mirror cdn.discordapp.com link content to Matrix channel
-- [x] Generate thumbnails for Discord->Matrix videos 
+- [x] Generate thumbnails for Discord->Matrix videos
 - [x] Properly resolve Matrix->Discord user mentions
 - [x] Remove attachment name from Matrix->Discord bridged media
 - [x] Fix Discord messages with attachments losing their attachment when editing
 - [x] Fix deferred application commands not bridging
 - [x] Attachment spoiler tag bridging (bidirectional, Matrix side only supported on select clients like Cinny)
 - [x] Native Matrix->Discord message edits.
-- [x] Use authenticated media endpoints to bridge Matrix media 
+- [x] Use authenticated media endpoints to bridge Matrix media
 
 ### Planned:
-- [ ] Native Matrix->Discord emoji bridging via bot-owned Discord guilds 
+- [ ] Native Matrix->Discord emoji bridging via bot-owned Discord guilds
   > Probably only suitable for smaller scale deployments depending on the rate limits.
 - [ ] Matrix->Discord Reaction bridging
-  > Only one reaction is possible through the bot user, but better than nothing. 
+  > Only one reaction is possible through the bot user, but better than nothing.
 
-> [!NOTE]  
+> [!NOTE]
 > Below follows the original `README.md`
 
 # Matrix Discord Bridge
@@ -207,7 +207,6 @@ In a vague order of what is coming up next
  - [ ] Provisioning API
  - [x] Webhooks (allows for prettier messages to discord)
  - [ ] VOIP (**Hard** | Unlikely to be finished anytime soon)
-
 
 ## Contact
 
