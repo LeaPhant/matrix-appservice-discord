@@ -19,8 +19,8 @@ import { DiscordBot } from "./bot";
 import { Log } from "./log";
 import {
     DiscordMessageParser,
-    IDiscordMessageParserOpts,
     IDiscordMessageParserCallbacks,
+    IDiscordMessageParserOpts,
     IDiscordMessageParserResult,
 } from "./parser/index";
 
@@ -87,7 +87,7 @@ export class DiscordMessageProcessor {
             },
             getUser: async (id: string) => {
                 const member = msg.guild?.members.resolve(id);
-                const mxid = `@_discord_${id}:${this.domain}`;
+                const mxid = `@xdiscord_${id}:${this.domain}`;
                 const name = member ? member.displayName : mxid;
                 return {
                     mxid,

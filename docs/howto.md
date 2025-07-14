@@ -3,7 +3,7 @@
 
 The default format for room aliases (which are automatically resolved, whether the room exists on Matrix or not) is:
 
-``#_discord_guildid_channelid``
+``#xdiscord_guildid_channelid``
 
 You can find these on discord in the browser where:
 

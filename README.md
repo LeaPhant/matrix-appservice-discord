@@ -138,7 +138,7 @@ should show up in the network list on Element and other clients.
 * Make sure to create a bot user. Fill in ``config.yaml``
 * Run ``yarn addbot`` to get a authorisation link.
 * Give this link to owners of the guilds you plan to bridge.
-* Finally, you can join a room with ``#_discord_guildid_channelid``
+* Finally, you can join a room with ``#xdiscord_guildid_channelid``
   * These can be taken from the url ("/$GUILDID/$CHANNELID") when you are in a channel.
   * Element (and other clients with third party protocol support) users can directly join channels from the room directory.
 * You can use Webhooks to make messages relayed by the bridge not nested by the bot user. This will also display the avatar of the user speaking on matrix with their messages.
