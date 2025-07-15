@@ -307,12 +307,6 @@ export class UserSyncroniser {
             username: newMember.user.tag,
         });
 
-        const remoteUser = await this.userStore.getRemoteUser(newMember.id);
-
-        if (remoteUser?.guildNicks?.get(newMember.guild.id) == name) {
-            guildState.displayName = "";
-        }
-
         return guildState;
     }
 
