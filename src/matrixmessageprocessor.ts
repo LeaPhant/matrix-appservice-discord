@@ -127,6 +127,12 @@ export class MatrixMessageProcessor {
                 }
                 return match[1];
             },
+            getRoleId: async (mxid: string) => {
+                const role = await guild.roles.fetch(mxid);
+                if (!role)
+                        return null;
+                return role?.id;
+            },
             mxcUrlToHttp: async (mxc: string) => {
                 if (params && params.mxClient) {
                     return await Util.MxcToHttpUnauthenticated(mxc, params.mxClient);
