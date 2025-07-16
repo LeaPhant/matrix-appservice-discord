@@ -176,6 +176,7 @@ In a vague order of what is coming up next
 
  - Matrix -> Discord
      - [x] Text content
+     - [x] Mentionning roles
      - [x] Image content
      - [x] Audio/Video content
      - [ ] Typing notifs (**Not supported, requires syncing**)
