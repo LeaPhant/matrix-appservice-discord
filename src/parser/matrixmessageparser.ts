@@ -91,7 +91,7 @@ export class MatrixMessageParser {
                 if(match.groups && match.groups.potentRole) {
                     const result = await this.parseRole(opts,match.groups.potentRole);
                     if (result) {
-                        reply.replace(match[0],result);
+                        reply = reply.replace(match[0],result);
                     }
                 }
             }
