@@ -188,8 +188,6 @@ export class MatrixMessageParser {
     private async parseRole(opts: IMatrixMessageParserOpts, id: string): Promise<string> {
         const retId = await opts.callbacks.getRoleId(id);
 
-        log.warn(`${id} : ${retId}`)
-
         if (!retId) {
             return "";
         }
