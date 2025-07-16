@@ -86,7 +86,7 @@ export class MatrixMessageParser {
             reply = await this.escapeDiscord(opts, msg.body);
 
             //Look for roles and matches them
-            const potentRole = new RegExp(/@?<potentRole>[A-Za-z0-9]+/g);
+            const potentRole = new RegExp(/@(?<potentRole>[A-Za-z0-9]+)/g);
             for (const match of reply.matchAll(potentRole)) {
                 if(match.groups && match.groups.potentRole) {
                     const result = await this.parseRole(opts,match.groups.potentRole);
