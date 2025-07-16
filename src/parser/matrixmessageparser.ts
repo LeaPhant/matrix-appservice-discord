@@ -20,16 +20,20 @@ import * as Parser from "node-html-parser";
 import { Util } from "./util";
 import * as highlightjs from "highlight.js";
 import * as unescapeHtml from "unescape-html";
-import got from "got";
+import { Log } from "../log";
+
 
 const MIN_NAME_LENGTH = 2;
 const MAX_NAME_LENGTH = 32;
 const MATRIX_TO_LINK = "https://matrix.to/#/";
 const DEFAULT_ROOM_NOTIFY_POWER_LEVEL = 50;
 
+const log = new Log("DiscordMessageParser");
+
 export interface IMatrixMessageParserCallbacks {
     canNotifyRoom: () => Promise<boolean>;
     getUserId: (mxid: string) => Promise<string | null>;
+    getRoleId:(mxid: string) => Promise<string | null>;
     getChannelId: (mxid: string) => Promise<string | null>;
     getEmoji: (mxc: string, name: string) => Promise<IDiscordEmoji | null>;
     mxcUrlToHttp: (mxc: string) => Promise<string | null>;
@@ -80,6 +84,17 @@ export class MatrixMessageParser {
             reply = reply.replace(/\s*$/, ""); // trim off whitespace at end
         } else {
             reply = await this.escapeDiscord(opts, msg.body);
+
+            //Look for roles and matches them
+            const potentRole = new RegExp(/@?<potentRole>[A-Za-z0-9]+/g);
+            for (const match of reply.matchAll(potentRole)) {
+                if(match.groups && match.groups.potentRole) {
+                    const result = await this.parseRole(opts,match.groups.potentRole);
+                    if (result) {
+                        reply.replace(match[0],result);
+                    }
+                }
+            }
         }
 
         if (msg.msgtype === "m.emote") {
@@ -157,6 +172,17 @@ export class MatrixMessageParser {
             return "";
         }
         return `<@${retId}>`;
+    }
+
+    private async parseRole(opts: IMatrixMessageParserOpts, id: string): Promise<string> {
+        const retId = await opts.callbacks.getRoleId(id);
+
+        log.warn(`${id} : ${retId}`)
+
+        if (!retId) {
+            return "";
+        }
+        return `<@&${retId}>`;
     }
 
     private async parseChannel(opts: IMatrixMessageParserOpts, id: string): Promise<string> {
@@ -346,6 +372,8 @@ export class MatrixMessageParser {
             if ((node as Parser.TextNode).text === "\n") {
                 return "";
             }
+            //If it's not a link and it start with @ it can be
+
             return await this.escapeDiscord(opts, (node as Parser.TextNode).text);
         } else if (node.nodeType === Parser.NodeType.ELEMENT_NODE) {
             const nodeHtml = node as Parser.HTMLElement;
