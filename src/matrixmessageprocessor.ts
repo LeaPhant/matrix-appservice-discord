@@ -129,7 +129,7 @@ export class MatrixMessageProcessor {
             },
             getRoleId: async (mxid: string) => {
                 for (const role of guild.roles.cache.values()) {
-                    if (role.name === mxid)
+                    if (role.name.toLowerCase() === mxid.toLowerCase())
                         return role.id
                 }
                 return null;
