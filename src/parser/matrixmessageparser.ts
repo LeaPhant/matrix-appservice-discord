@@ -105,7 +105,7 @@ export class MatrixMessageParser {
     }
 
     private async lookForAndMatchRoles(opts: IMatrixMessageParserOpts, msg: string) {
-        let reply = ""
+        let reply = msg;
         //Look for roles and matches them
         const potentRole = new RegExp(/@(?<potentRole>[A-Za-z0-9]+)/g);
         for (const match of msg.matchAll(potentRole)) {
