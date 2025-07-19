@@ -1,5 +1,10 @@
 # Matrix Discord Bridge Fork
 
+ > [!WARNING]
+> I'm giving up on this codebase and will be focusing on the [mautrix/discord](https://github.com/mautrix/discord) bridge instead.
+> It's really solid, actively maintained and I can actually get some changes upstreamed.
+> As much as I liked this bridge it's had too many issues in my deployment lately and I'm tired of permanently cleaning up behind it.
+
 This is an optinionated fork of [matrix-appservice-discord](https://github.com/LeaPhant/matrix-appservice-discord) I'm personally maintaining for my own bridge, aiming to fix a lot of the shortcomings for smooth interaction between Matrix and Discord users of my community. It's usable by anyone and as of now a drop-in replacement, but I can't give guarantees for stability/security in production as this is just a one person project I work on occasionally.
 
 ### Features:
