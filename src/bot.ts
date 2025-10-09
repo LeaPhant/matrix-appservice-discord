@@ -1616,7 +1616,7 @@ export class DiscordBot {
     }
 
     private async DeleteDiscordMessage(msg: Discord.Message) {
-        log.info(`Got delete event for ${msg.id}`);
+        log.info(`Got delete event for ${msg.id} by ${msg.member?.id}`);
         const storeEvent = await this.store.Get(DbEvent, {discord_id: msg.id});
         if (!storeEvent || !storeEvent.Result) {
             log.warn(`Could not redact because the event was not in the store.`);
