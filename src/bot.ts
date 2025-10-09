@@ -1622,6 +1622,10 @@ export class DiscordBot {
             log.warn(`Could not redact because the event was not in the store.`);
             return;
         }
+        if (msg.channel.id == 1424903784353763371) {
+            log.warn(`Will not redact on this server`)
+            return;
+        }
         while (storeEvent.Next()) {
             log.info(`Deleting discord msg ${storeEvent.DiscordId}`);
             const intent = this.GetIntentFromDiscordMember(msg.author, msg.webhookId);
