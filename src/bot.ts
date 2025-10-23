@@ -1622,7 +1622,7 @@ export class DiscordBot {
             log.warn(`Could not redact because the event was not in the store.`);
             return;
         }
-        if (msg.channel.id == "1424903784353763371") {
+        if (msg?.channel?.guild?.id == "1424903783254724710") {
             log.warn(`Will not redact on this server`)
             return;
         }
