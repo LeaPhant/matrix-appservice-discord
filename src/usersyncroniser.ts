@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { User, GuildMember, Message } from "discord.js";
+import { Appservice, Intent } from "@vector-im/matrix-bot-sdk";
+import { GuildMember, Message, User } from "discord.js";
 import { DiscordBot } from "./bot";
-import { Util } from "./util";
 import { DiscordBridgeConfig } from "./config";
+import { DbUserStore, RemoteUser } from "./db/userstore";
 import { Log } from "./log";
 import { IMatrixEvent } from "./matrixtypes";
-import { DbUserStore, RemoteUser } from "./db/userstore";
-import { Appservice, Intent } from "@vector-im/matrix-bot-sdk";
+import { Util } from "./util";
 
 const log = new Log("UserSync");
 
@@ -242,7 +242,7 @@ export class UserSyncroniser {
         }
         const userState: IUserState = Object.assign({}, DEFAULT_USER_STATE, {
             id: discordUser.id + mxidExtra,
-            mxUserId: `@_discord_${discordUser.id}${mxidExtra}:${this.config.bridge.domain}`,
+            mxUserId: `@xdiscord_${discordUser.id}${mxidExtra}:${this.config.bridge.domain}`,
         });
         const displayName = Util.ApplyPatternString(this.config.ghosts.usernamePattern, {
             id: discordUser.id,
@@ -298,7 +298,7 @@ export class UserSyncroniser {
             displayColor: newMember.displayColor,
             displayName: name,
             id: newMember.id,
-            mxUserId: `@_discord_${newMember.id}:${this.config.bridge.domain}`,
+            mxUserId: `@xdiscord_${newMember.id}:${this.config.bridge.domain}`,
             roles: newMember.roles.cache.map((role) => { return {
                 color: role.color,
                 name: role.name,
@@ -306,12 +306,6 @@ export class UserSyncroniser {
             }; }),
             username: newMember.user.tag,
         });
-
-        const remoteUser = await this.userStore.getRemoteUser(newMember.id);
-
-        if (remoteUser?.guildNicks?.get(newMember.guild.id) == name) {
-            guildState.displayName = "";
-        }
 
         return guildState;
     }
@@ -331,7 +325,7 @@ export class UserSyncroniser {
             bot: user.bot,
             displayName: user.username,
             id: user.id + mxidExtra,
-            mxUserId: `@_discord_${user.id}${mxidExtra}:${this.config.bridge.domain}`,
+            mxUserId: `@xdiscord_${user.id}${mxidExtra}:${this.config.bridge.domain}`,
             roles: [],
             username: user.tag,
         });

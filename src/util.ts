@@ -14,25 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { PermissionFlagsBits, GatewayIntentBits } from "discord.js";
-import { DiscordBridgeConfig } from "./config";
-import { IMatrixEvent } from "./matrixtypes";
-import * as http from "node:http";
-import * as https from "node:https";
+import { GatewayIntentBits, PermissionFlagsBits } from "discord.js";
+import { imageSize } from 'image-size';
 import { Buffer } from "node:buffer";
 import * as child_process from 'node:child_process';
 import * as fs from 'node:fs/promises';
+import * as http from "node:http";
+import * as https from "node:https";
+import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as util from 'node:util';
-import { tmpdir } from 'node:os';
-import { imageSize } from 'image-size'
+import { DiscordBridgeConfig } from "./config";
+import { IMatrixEvent } from "./matrixtypes";
 
 const execFile = util.promisify(child_process.execFile);
 
 const HTTP_OK = 200;
 
-import { Log } from "./log";
 import { Intent, MatrixClient } from "@vector-im/matrix-bot-sdk";
+import { Log } from "./log";
 const log = new Log("Util");
 
 type PERMISSIONTYPES = any | any[]; // tslint:disable-line no-any
@@ -258,7 +258,7 @@ export class Util {
                     return;
                 }
                 const mxid = member.stateKey;
-                if (mxid.startsWith("@_discord_")) {
+                if (mxid.startsWith("@xdiscord_")) {
                     return;
                 }
                 let displayName = member.content.displayname;

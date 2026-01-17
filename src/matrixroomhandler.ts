@@ -17,12 +17,12 @@ limitations under the License.
 import { DiscordBot, IThirdPartyLookup } from "./bot";
 import { DiscordBridgeConfig } from "./config";
 
+import { Appservice, IApplicationServiceProtocol, Intent } from "@vector-im/matrix-bot-sdk";
 import * as Discord from "discord.js";
-import { Util } from "./util";
-import { Log } from "./log";
-const log = new Log("MatrixRoomHandler");
 import { DbRoomStore, MatrixStoreRoom, RemoteStoreRoom } from "./db/roomstore";
-import { Appservice, Intent, IApplicationServiceProtocol } from "@vector-im/matrix-bot-sdk";
+import { Log } from "./log";
+import { Util } from "./util";
+const log = new Log("MatrixRoomHandler");
 
 const ICON_URL = "https://matrix.org/_matrix/media/r0/download/matrix.org/mlxoESwIsTbJrfXyAAogrNxA";
 const ROOM_NAME_PARTS = 2;
@@ -137,7 +137,7 @@ export class MatrixRoomHandler {
     public async OnAliasQuery(alias: string): Promise<any> {
         const aliasLocalpart = alias.substring("#".length, alias.indexOf(":"));
         log.info("Got request for #", aliasLocalpart);
-        const srvChanPair = aliasLocalpart.substring("_discord_".length).split("_", ROOM_NAME_PARTS);
+        const srvChanPair = aliasLocalpart.substring("xdiscord_".length).split("_", ROOM_NAME_PARTS);
         if (srvChanPair.length < ROOM_NAME_PARTS || srvChanPair[0] === "" || srvChanPair[1] === "") {
             log.warn(`Alias '${aliasLocalpart}' was missing a server and/or a channel`);
             return;

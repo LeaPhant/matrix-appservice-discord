@@ -14,17 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as Discord from "discord.js";
-import { IMatrixMessage } from "./matrixtypes";
-import { Util } from "./util";
-import { DiscordBot } from "./bot";
 import { MatrixClient } from "@vector-im/matrix-bot-sdk";
+import * as Discord from "discord.js";
+import { DiscordBot } from "./bot";
 import { DiscordBridgeConfig } from "./config";
+import { IMatrixMessage } from "./matrixtypes";
 import {
     IMatrixMessageParserCallbacks,
     IMatrixMessageParserOpts,
     MatrixMessageParser,
 } from "./parser/index";
+import { Util } from "./util";
 
 const DEFAULT_ROOM_NOTIFY_POWER_LEVEL = 50;
 
@@ -82,12 +82,12 @@ export class MatrixMessageProcessor {
                 );
             },
             getChannelId: async (mxid: string) => {
-                const CHANNEL_REGEX = /^#_discord_[0-9]*_([0-9]*):/;
+                const CHANNEL_REGEX = /^#xdiscord_[0-9]*_([0-9]*):/;
                 const match = mxid.match(CHANNEL_REGEX);
                 const channel = match && guild.channels.resolve(match[1]);
                 if (!channel) {
                     /*
-                    This isn't formatted in #_discord_, so let's fetch the internal room ID
+                    This isn't formatted in #xdiscord_, so let's fetch the internal room ID
                     and see if it is still a bridged room!
                     */
                     if (params && params.mxClient) {
@@ -119,13 +119,20 @@ export class MatrixMessageProcessor {
                 return emoji;
             },
             getUserId: async (mxid: string) => {
-                const USER_REGEX = /^@_discord_([0-9]+)/;
+                const USER_REGEX = /^@xdiscord_([0-9]+)/;
                 const match = mxid.match(USER_REGEX);
                 const member = match && await guild.members.fetch(match[1]);
                 if (!match || !member) {
                     return null;
                 }
                 return match[1];
+            },
+            getRoleId: async (mxid: string) => {
+                for (const role of guild.roles.cache.values()) {
+                    if (role.name.toLowerCase() === mxid.toLowerCase())
+                        return role.id
+                }
+                return null;
             },
             mxcUrlToHttp: async (mxc: string) => {
                 if (params && params.mxClient) {

@@ -13,20 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Appservice, IAppserviceRegistration, LogService, MatrixClient } from "@vector-im/matrix-bot-sdk";
-import * as yaml from "js-yaml";
-import * as fs from "fs";
-import { DiscordBridgeConfig } from "./config";
-import { DiscordBot } from "./bot";
-import { DiscordStore } from "./store";
-import { Log } from "./log";
-import "source-map-support/register";
+import { Appservice, IAppserviceRegistration, LogService } from "@vector-im/matrix-bot-sdk";
 import * as cliArgs from "command-line-args";
 import * as usage from "command-line-usage";
+import { Response } from "express";
+import * as fs from "fs";
+import * as yaml from "js-yaml";
+import "source-map-support/register";
 import { v4 as uuid } from "uuid";
+import { DiscordBot } from "./bot";
+import { DiscordBridgeConfig } from "./config";
+import { Log } from "./log";
 import { IMatrixEvent } from "./matrixtypes";
 import { MetricPeg, PrometheusBridgeMetrics } from "./metrics";
-import { Response } from "express";
+import { DiscordStore } from "./store";
 
 const log = new Log("DiscordAS");
 
@@ -52,20 +52,20 @@ function generateRegistration(opts, registrationPath: string, config: DiscordBri
             aliases: [
                 {
                     exclusive: true,
-                    regex: '#_discord_.+:' + config.bridge.domain,
+                    regex: '#xdiscord_.+:' + config.bridge.domain,
                 },
             ],
             rooms: [ ],
             users: [
                 {
                     exclusive: true,
-                    regex: '@_discord_.+:' + config.bridge.domain,
+                    regex: '@xdiscord_.+:' + config.bridge.domain,
                 },
             ],
         },
         protocols: ["discord"],
         rate_limited: false,
-        sender_localpart: "_discord_bot",
+        sender_localpart: "xdiscord_bot",
         url: opts.url,
         /* eslint-enable @typescript-eslint/naming-convention */
     } as IAppserviceRegistration;

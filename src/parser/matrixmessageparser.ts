@@ -20,16 +20,20 @@ import * as Parser from "node-html-parser";
 import { Util } from "./util";
 import * as highlightjs from "highlight.js";
 import * as unescapeHtml from "unescape-html";
-import got from "got";
+import { Log } from "../log";
+
 
 const MIN_NAME_LENGTH = 2;
 const MAX_NAME_LENGTH = 32;
 const MATRIX_TO_LINK = "https://matrix.to/#/";
 const DEFAULT_ROOM_NOTIFY_POWER_LEVEL = 50;
 
+const log = new Log("DiscordMessageParser");
+
 export interface IMatrixMessageParserCallbacks {
     canNotifyRoom: () => Promise<boolean>;
     getUserId: (mxid: string) => Promise<string | null>;
+    getRoleId: (mxid: string) => Promise<string | null>;
     getChannelId: (mxid: string) => Promise<string | null>;
     getEmoji: (mxc: string, name: string) => Promise<IDiscordEmoji | null>;
     mxcUrlToHttp: (mxc: string) => Promise<string | null>;
@@ -74,12 +78,12 @@ export class MatrixMessageParser {
             const parsed = Parser.parse(msg.formatted_body, {
                 lowerCaseTagName: true,
                 pre: true,
-            // tslint:disable-next-line no-any
+                // tslint:disable-next-line no-any
             } as any);
             reply = await this.walkNode(opts, parsed);
             reply = reply.replace(/\s*$/, ""); // trim off whitespace at end
         } else {
-            reply = await this.escapeDiscord(opts, msg.body);
+            reply = await this.lookForRolesAndEscapeDiscord(opts, msg.body);
         }
 
         if (msg.msgtype === "m.emote") {
@@ -88,6 +92,28 @@ export class MatrixMessageParser {
                 reply = `_${await this.escapeDiscord(opts, opts.displayname)} ${reply}_`;
             } else {
                 reply = `_${reply}_`;
+            }
+        }
+        return reply;
+    }
+
+    private async lookForRolesAndEscapeDiscord(opts: IMatrixMessageParserOpts, msg: string) {
+        let reply = await this.escapeDiscord(opts, msg);
+        reply = await this.lookForAndMatchRoles(opts, reply);
+
+        return reply;
+    }
+
+    private async lookForAndMatchRoles(opts: IMatrixMessageParserOpts, msg: string) {
+        let reply = msg;
+        //Look for roles and matches them
+        const potentRole = new RegExp(/@(?<potentRole>[A-Za-z0-9]+)/g);
+        for (const match of msg.matchAll(potentRole)) {
+            if (match.groups && match.groups.potentRole) {
+                const result = await this.parseRole(opts, match.groups.potentRole);
+                if (result) {
+                    reply = msg.replace(match[0], result);
+                }
             }
         }
         return reply;
@@ -157,6 +183,15 @@ export class MatrixMessageParser {
             return "";
         }
         return `<@${retId}>`;
+    }
+
+    private async parseRole(opts: IMatrixMessageParserOpts, id: string): Promise<string> {
+        const retId = await opts.callbacks.getRoleId(id);
+
+        if (!retId) {
+            return "";
+        }
+        return `<@&${retId}>`;
     }
 
     private async parseChannel(opts: IMatrixMessageParserOpts, id: string): Promise<string> {
@@ -346,7 +381,8 @@ export class MatrixMessageParser {
             if ((node as Parser.TextNode).text === "\n") {
                 return "";
             }
-            return await this.escapeDiscord(opts, (node as Parser.TextNode).text);
+
+            return await this.lookForRolesAndEscapeDiscord(opts, (node as Parser.TextNode).text);
         } else if (node.nodeType === Parser.NodeType.ELEMENT_NODE) {
             const nodeHtml = node as Parser.HTMLElement;
             switch (nodeHtml.tagName) {

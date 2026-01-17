@@ -19,24 +19,24 @@ This is an optinionated fork of [matrix-appservice-discord](https://github.com/L
   ![Screenshot of bridged Discord embed on Matrix](https://boob.li/E6QzPs.png)
 - [x] Prettier replies from Matrix->Discord that fool Discord users into thinking they're the real thing
 
-  ![Screenshot of bridged reply](https://boob.li/Z34WuL.png) 
+  ![Screenshot of bridged reply](https://boob.li/Z34WuL.png)
 - [x] Mirror cdn.discordapp.com link content to Matrix channel
-- [x] Generate thumbnails for Discord->Matrix videos 
+- [x] Generate thumbnails for Discord->Matrix videos
 - [x] Properly resolve Matrix->Discord user mentions
 - [x] Remove attachment name from Matrix->Discord bridged media
 - [x] Fix Discord messages with attachments losing their attachment when editing
 - [x] Fix deferred application commands not bridging
 - [x] Attachment spoiler tag bridging (bidirectional, Matrix side only supported on select clients like Cinny)
 - [x] Native Matrix->Discord message edits.
-- [x] Use authenticated media endpoints to bridge Matrix media 
+- [x] Use authenticated media endpoints to bridge Matrix media
 
 ### Planned:
-- [ ] Native Matrix->Discord emoji bridging via bot-owned Discord guilds 
+- [ ] Native Matrix->Discord emoji bridging via bot-owned Discord guilds
   > Probably only suitable for smaller scale deployments depending on the rate limits.
 - [ ] Matrix->Discord Reaction bridging
-  > Only one reaction is possible through the bot user, but better than nothing. 
+  > Only one reaction is possible through the bot user, but better than nothing.
 
-> [!NOTE]  
+> [!NOTE]
 > Below follows the original `README.md`
 
 # Matrix Discord Bridge
@@ -143,7 +143,7 @@ should show up in the network list on Element and other clients.
 * Make sure to create a bot user. Fill in ``config.yaml``
 * Run ``yarn addbot`` to get a authorisation link.
 * Give this link to owners of the guilds you plan to bridge.
-* Finally, you can join a room with ``#_discord_guildid_channelid``
+* Finally, you can join a room with ``#xdiscord_guildid_channelid``
   * These can be taken from the url ("/$GUILDID/$CHANNELID") when you are in a channel.
   * Element (and other clients with third party protocol support) users can directly join channels from the room directory.
 * You can use Webhooks to make messages relayed by the bridge not nested by the bot user. This will also display the avatar of the user speaking on matrix with their messages.
@@ -181,6 +181,7 @@ In a vague order of what is coming up next
 
  - Matrix -> Discord
      - [x] Text content
+     - [x] Mentionning roles
      - [x] Image content
      - [x] Audio/Video content
      - [ ] Typing notifs (**Not supported, requires syncing**)
@@ -212,7 +213,6 @@ In a vague order of what is coming up next
  - [ ] Provisioning API
  - [x] Webhooks (allows for prettier messages to discord)
  - [ ] VOIP (**Hard** | Unlikely to be finished anytime soon)
-
 
 ## Contact
 

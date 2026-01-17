@@ -18,19 +18,19 @@ limitations under the License.
 */
 
 import Discord, { EmbedBuilder } from "discord.js";
+import * as mime from "mime";
+import * as path from "path";
 import { DiscordBot } from "./bot";
 import { DiscordBridgeConfig } from "./config";
-import { Util, wrapError, isUrl } from "./util";
-import * as path from "path";
-import * as mime from "mime";
-import { IMatrixEvent, IMatrixEventContent, IMatrixMessage } from "./matrixtypes";
-import { MatrixMessageProcessor, IMatrixMessageProcessorParams } from "./matrixmessageprocessor";
-import { MatrixCommandHandler } from "./matrixcommandhandler";
 import { DbEvent } from "./db/dbdataevent";
+import { MatrixCommandHandler } from "./matrixcommandhandler";
+import { IMatrixMessageProcessorParams, MatrixMessageProcessor } from "./matrixmessageprocessor";
+import { IMatrixEvent, IMatrixEventContent, IMatrixMessage } from "./matrixtypes";
+import { isUrl, Util } from "./util";
 
-import { Log } from "./log";
-import { IRoomStoreEntry, RemoteStoreRoom } from "./db/roomstore";
 import { Appservice, MatrixClient } from "@vector-im/matrix-bot-sdk";
+import { IRoomStoreEntry, RemoteStoreRoom } from "./db/roomstore";
+import { Log } from "./log";
 import { DiscordStore } from "./store";
 import { TimedCache } from "./structures/timedcache";
 
@@ -576,7 +576,7 @@ export class MatrixEventProcessor {
         // Are they a discord user.
         if (this.bridge.isNamespacedUser(sender)) {
             const localpart = Util.ParseMxid(sender).localpart;
-            const userOrMember = await this.discord.GetDiscordUserOrMember(localpart.substring("_discord".length));
+            const userOrMember = await this.discord.GetDiscordUserOrMember(localpart.substring("xdiscord".length));
             if (userOrMember instanceof Discord.User) {
                 embed.setAuthor({
                     name: userOrMember.username,

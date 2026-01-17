@@ -16,33 +16,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Appservice, Intent, MatrixClient } from "@vector-im/matrix-bot-sdk";
 import * as Discord from "discord.js";
-const { EmbedBuilder } = Discord;
-import { IDiscordMessageParserResult } from "./parser/index";
-import { DiscordBridgeConfig } from "./config";
+import { imageSize } from 'image-size';
+import { BridgeBlocker, UserActivityState, UserActivityTracker } from "matrix-appservice-bridge";
+import * as mime from "mime";
+import { ChannelSyncroniser } from "./channelsyncroniser";
 import { DiscordClientFactory } from "./clientfactory";
-import { DiscordStore } from "./store";
+import { DiscordBridgeConfig } from "./config";
 import { DbEmoji } from "./db/dbdataemoji";
-import { DbSticker } from "./db/dbdatasticker";
 import { DbEvent } from "./db/dbdataevent";
 import { DbReaction } from "./db/dbdatareaction";
+import { DbSticker } from "./db/dbdatasticker";
+import { DiscordCommandHandler } from "./discordcommandhandler";
 import { DiscordMessageProcessor } from "./discordmessageprocessor";
-import { MatrixEventProcessor, MatrixEventProcessorOpts, IMatrixEventProcessorResult } from "./matrixeventprocessor";
+import { Log } from "./log";
+import { IMatrixEventProcessorResult, MatrixEventProcessor, MatrixEventProcessorOpts } from "./matrixeventprocessor";
+import { MatrixRoomHandler } from "./matrixroomhandler";
+import { IMatrixEvent, IMatrixMediaInfo, IMatrixMessage } from "./matrixtypes";
+import { MetricPeg } from "./metrics";
+import { IDiscordMessageParserResult } from "./parser/index";
 import { PresenceHandler } from "./presencehandler";
 import { Provisioner } from "./provisioner";
-import { UserSyncroniser } from "./usersyncroniser";
-import { ChannelSyncroniser } from "./channelsyncroniser";
-import { MatrixRoomHandler } from "./matrixroomhandler";
-import { Log } from "./log";
-import * as mime from "mime";
-import { IMatrixEvent, IMatrixMediaInfo, IMatrixMessage } from "./matrixtypes";
-import { Appservice, Intent, MatrixClient } from "@vector-im/matrix-bot-sdk";
-import { DiscordCommandHandler } from "./discordcommandhandler";
-import { MetricPeg } from "./metrics";
+import { DiscordStore } from "./store";
 import { Lock } from "./structures/lock";
+import { UserSyncroniser } from "./usersyncroniser";
 import { Util } from "./util";
-import { BridgeBlocker, UserActivityState, UserActivityTracker } from "matrix-appservice-bridge";
-import { imageSize } from 'image-size'
+const { EmbedBuilder } = Discord;
 
 const DISCORD_STICKER_TYPE = {
     1: 'image/png',
@@ -650,7 +650,7 @@ export class DiscordBot {
                 return channel.name.toLowerCase() === channelName.toLowerCase(); // Implement searching in the future.
             }).map((channel) => {
                 return {
-                    alias: `#_discord_${guild!.id}_${channel.id}:${this.config.bridge.domain}`,
+                    alias: `#xdiscord_${guild!.id}_${channel.id}:${this.config.bridge.domain}`,
                     fields: {
                         channel_id: channel.id,
                         channel_name: channel.name,
@@ -1086,7 +1086,7 @@ export class DiscordBot {
         }
         const tchan = (channel as Discord.TextChannel);
         const kickeeUser = await this.GetDiscordUserOrMember(
-            kickeeUserId.substring("@_discord_".length, kickeeUserId.indexOf(":") - 1),
+            kickeeUserId.substring("@xdiscord_".length, kickeeUserId.indexOf(":") - 1),
             tchan.guild.id,
         );
         if (!kickeeUser) {
@@ -1616,10 +1616,14 @@ export class DiscordBot {
     }
 
     private async DeleteDiscordMessage(msg: Discord.Message) {
-        log.info(`Got delete event for ${msg.id}`);
+        log.info(`Got delete event for ${msg.id} by ${msg.member?.id}`);
         const storeEvent = await this.store.Get(DbEvent, {discord_id: msg.id});
         if (!storeEvent || !storeEvent.Result) {
             log.warn(`Could not redact because the event was not in the store.`);
+            return;
+        }
+        if (msg?.guildId == "1424903783254724710") {
+            log.warn(`Will not redact on this server`)
             return;
         }
         while (storeEvent.Next()) {
